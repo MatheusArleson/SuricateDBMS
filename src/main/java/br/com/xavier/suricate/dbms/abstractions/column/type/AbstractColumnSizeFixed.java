@@ -11,5 +11,6 @@ public class AbstractColumnSizeFixed
 	}
 
 	@Override
-	public void setSize(Short size) { }
+	protected void setSize(Short size) { }
+	
 }

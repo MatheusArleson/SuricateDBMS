@@ -8,5 +8,10 @@ public class AbstractColumnSizeVariable
 	public AbstractColumnSizeVariable(Short id, Short size, String name) {
 		super(id, size, name);
 	}
-
+	
+	@Override
+	public void setSize(Short size) {
+		super.setSize(size);
+	}
+	
 }

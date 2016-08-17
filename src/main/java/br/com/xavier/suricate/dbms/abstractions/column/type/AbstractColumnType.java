@@ -37,6 +37,9 @@ public class AbstractColumnType
 		return buffer.array();
 	}
 	
+	protected void setSize(Short size) {
+		this.size = size;
+	}
 	
 	//XXX GETTERS/SETTERS
 	@Override
@@ -54,9 +57,4 @@ public class AbstractColumnType
 		return size;
 	}
 	
-	@Override
-	public void setSize(Short size) {
-		this.size = size;
-	}
-
 }

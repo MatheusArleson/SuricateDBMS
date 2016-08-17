@@ -5,7 +5,6 @@ public interface IColumnType
 	
 	Short getId();
 	Short getSize();
-	void setSize(Short size);
 	String getName();
 	
 }
