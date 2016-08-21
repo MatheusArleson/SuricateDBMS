@@ -1,7 +1,7 @@
 package br.com.xavier.suricate.dbms.enums;
 
 public enum ColumnsTypesInfo {
-	
+	//16.777.215
 	//XXX ENUM MEMBERS
 	INTEGER("1", "Integer"),
 	STRING("2", "String");
@@ -33,7 +33,7 @@ public enum ColumnsTypesInfo {
 	
 	//XXX GETTERS
 	public Short getId() {
-		return id;
+		return new Short(id);
 	}
 	
 	public String getName() {

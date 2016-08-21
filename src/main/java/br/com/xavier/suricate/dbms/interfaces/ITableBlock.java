@@ -9,12 +9,12 @@ public interface ITableBlock
 	
 	Byte getTableId();
 	void setTableId(Byte id);
-	Integer getBlockId();
-	void setBlockId(Integer id);
+	IThreeByteValue getBlockId();
+	void setBlockId(IThreeByteValue id);
 	TableBlockType getType();
 	void setType(TableBlockType type);
-	Integer getBytesUsedInBlock();
-	void setBytesUsedInBlock(Integer bytesUsedInBlock);
+	IThreeByteValue getBytesUsedInBlock();
+	void setBytesUsedInBlock(IThreeByteValue bytesUsedInBlock);
 	Collection<IRow> getRows();
 	void setRows(Collection<IRow> rows);
 	

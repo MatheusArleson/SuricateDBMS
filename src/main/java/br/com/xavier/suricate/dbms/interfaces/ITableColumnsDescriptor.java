@@ -1,11 +1,11 @@
 package br.com.xavier.suricate.dbms.interfaces;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 public interface ITableColumnsDescriptor 
 		extends IBinarizable<ITableColumnsDescriptor> {
 	
-	ArrayList<IColumnDescriptor> getColumnsDescriptors();
-	void setColumnsDescriptors(ArrayList<IColumnDescriptor> columnsDescriptors);
+	Collection<IColumnDescriptor> getColumnsDescriptors();
+	void setColumnsDescriptors(Collection<IColumnDescriptor> columnsDescriptors);
 
 }

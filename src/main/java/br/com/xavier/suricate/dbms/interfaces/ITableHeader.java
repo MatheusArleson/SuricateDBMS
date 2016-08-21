@@ -7,8 +7,8 @@ public interface ITableHeader
 	
 	Byte getTableId();
 	void setTableId(Byte tableId);
-	Integer getBlockSize();
-	void setBlockSize(Integer id);
+	IThreeByteValue getBlockSize();
+	void setBlockSize(IThreeByteValue id);
 	Short getHeaderSize();
 	void setHeaderSize(Short headerSize);
 	Integer getNextFreeBlockId();
