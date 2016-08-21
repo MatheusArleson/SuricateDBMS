@@ -1,11 +1,13 @@
-package br.com.xavier.suricate.dbms.interfaces;
+package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
+import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
 
-public interface ITableBlock
-		extends IBinarizable<ITableBlock> {
+public interface ITableDataBlock
+		extends IBinarizable<ITableDataBlock> {
 	
 	Byte getTableId();
 	void setTableId(Byte id);
@@ -15,7 +17,7 @@ public interface ITableBlock
 	void setType(TableBlockType type);
 	IThreeByteValue getBytesUsedInBlock();
 	void setBytesUsedInBlock(IThreeByteValue bytesUsedInBlock);
-	Collection<IRow> getRows();
-	void setRows(Collection<IRow> rows);
+	Collection<IRowEntry> getRows();
+	void setRows(Collection<IRowEntry> rows);
 	
 }

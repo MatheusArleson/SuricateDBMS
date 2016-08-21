@@ -1,7 +1,7 @@
 package br.com.xavier.suricate.dbms.enums;
 
-public enum ColumnsTypesInfo {
-	//16.777.215
+public enum ColumnsTypes {
+	
 	//XXX ENUM MEMBERS
 	INTEGER("1", "Integer"),
 	STRING("2", "String");
@@ -11,18 +11,18 @@ public enum ColumnsTypesInfo {
 	private final String name;
 	
 	//XXX CONSTRUCTOR
-	private ColumnsTypesInfo(String id, String name) {
+	private ColumnsTypes(String id, String name) {
 		this.id = new Short(id);
 		this.name = name;
 	}
 	
 	//XXX METHODS
-	public static ColumnsTypesInfo getById(Short id){
+	public static ColumnsTypes getById(Short id){
 		if(id == null){
 			return null;
 		}
 		
-		for (ColumnsTypesInfo typeInfo : values()) {
+		for (ColumnsTypes typeInfo : values()) {
 			if(typeInfo.getId().equals(id)){
 				return typeInfo;
 			}
