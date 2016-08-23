@@ -14,5 +14,11 @@ public class ThreeBytesValue
 	public ThreeBytesValue(Integer value){
 		super(value);
 	}
+	
+	public static void main(String[] args) {
+		ThreeBytesValue tbv = new ThreeBytesValue();
+		tbv.setValue(511);
+		System.out.println(tbv.getValue());
+	}
 
 }

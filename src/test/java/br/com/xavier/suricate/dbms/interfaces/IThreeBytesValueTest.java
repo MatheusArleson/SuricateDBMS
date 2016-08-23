@@ -1,6 +1,9 @@
 package br.com.xavier.suricate.dbms.interfaces;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.*;
+import static org.hamcrest.core.IsNot.*;
+import static org.hamcrest.core.IsEqual.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,6 +18,7 @@ public abstract class IThreeBytesValueTest {
 	protected IThreeByteValue instance;
 	
 	//XXX TEST PROPERTIES
+	protected Integer maxValue;
 	protected Integer number;
 	protected byte[] numberBinary;
 	
@@ -28,10 +32,12 @@ public abstract class IThreeBytesValueTest {
 	@Before
 	public void setup() {
 		instance = getInstance();
+		
+		maxValue = IThreeByteValue.MAX_VALUE;
 		number = 99;
 		numberBinary = new byte[3];
 		
-		byte[] array = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(256).array();
+		byte[] array = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(number).array();
 		ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).get(numberBinary);
 	}
 
@@ -72,27 +78,35 @@ public abstract class IThreeBytesValueTest {
 	@Test
 	public void mustNotReturnDifferentValueForValueSetted(){
 		instance.setValue(number);
-		
 		Integer unexpected = number + 1;
+		
 		assertNotEquals(unexpected, instance.getValue());
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void mustThrowIllegalArgumentExceptionIfValueIsGreatherThanMaxValue(){
-		int value = IThreeByteValue.MAX_VALUE + 1;
+		Integer value = maxValue + 1;
+		
 		instance.setValue(value);
 	}
 	
 	@Test
 	public void mustNotThrowIllegalArgumentExceptionIfValueIsEqualThanMaxValue(){
-		int value = IThreeByteValue.MAX_VALUE;
-		instance.setValue(value);
+		instance.setValue(maxValue);
 	}
 	
 	@Test
 	public void mustNotThrowIllegalArgumentExceptionIfValueIsLessThanMaxValue(){
-		int value = IThreeByteValue.MAX_VALUE - 1;
+		Integer value = IThreeByteValue.MAX_VALUE - 1;
+		
 		instance.setValue(value);
+	}
+	
+	@Test
+	public void mustWorkWithMaxValue(){
+		instance.setValue(maxValue);
+		
+		assertEquals(maxValue, instance.getValue());
 	}
 	
 	// ------------------------------------------
@@ -116,7 +130,8 @@ public abstract class IThreeBytesValueTest {
 	public void mustReturnSameValueBinaryForValueSetted(){
 		instance.setValue(number);
 		
-		assertEquals(numberBinary, instance.getValue());
+		assertThat(numberBinary, is(equalTo(instance.getValueBinary())));
+		
 	}
 	
 	@Test
@@ -124,7 +139,7 @@ public abstract class IThreeBytesValueTest {
 		instance.setValue(number);
 		numberBinary[0] = 0;
 		
-		assertNotEquals(numberBinary, instance.getValue());
+		assertThat(numberBinary, not(equalTo(instance.getValueBinary())));
 	}
 	
 }

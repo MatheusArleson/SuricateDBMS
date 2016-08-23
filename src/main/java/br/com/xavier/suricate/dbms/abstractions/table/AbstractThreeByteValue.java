@@ -19,6 +19,11 @@ public class AbstractThreeByteValue
 	
 	//XXX OVERRIDE METHODS
 	@Override
+	public byte[] toByteArray() {
+		return getValueBinary();
+	}
+	
+	@Override
 	public Integer getValue() {
 		if(value == null){
 			return null;
@@ -47,6 +52,7 @@ public class AbstractThreeByteValue
 		
 	}
 
+	//XXX GETTERS/SETTERS
 	@Override
 	public byte[] getValueBinary() {
 		return value;
@@ -55,11 +61,6 @@ public class AbstractThreeByteValue
 	@Override
 	public void setValueBinary(byte[] value) {
 		this.value = value;
-	}
-
-	@Override
-	public byte[] toByteArray() {
-		return getValueBinary();
 	}
 
 }
