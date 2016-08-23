@@ -20,7 +20,9 @@ public abstract class IThreeBytesValueTest {
 	//XXX TEST PROPERTIES
 	protected Integer maxValue;
 	protected Integer number;
-	protected byte[] numberBinary;
+	
+	//TODO FIXME DONT MIX LITTLE AND BIG ENDIAN ON THE TEST
+	//protected byte[] numberBinary;
 	
 	//XXX CONSTRUCTOR
 	public IThreeBytesValueTest() {	}
@@ -35,6 +37,7 @@ public abstract class IThreeBytesValueTest {
 		
 		maxValue = IThreeByteValue.MAX_VALUE;
 		number = 99;
+		
 		numberBinary = new byte[3];
 		
 		byte[] array = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(number).array();
