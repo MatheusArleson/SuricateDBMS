@@ -1,9 +1,10 @@
 package br.com.xavier.suricate.dbms.interfaces.table.data;
 
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.IDeserializable;
+import br.com.xavier.suricate.dbms.interfaces.ISerializable;
 
 public interface IColumnEntry
-		extends IBinarizable<IColumnEntry> {
+		extends ISerializable, IDeserializable<IColumnEntry> {
 	
 	Short getContentSize();
 	void setContentSize(Short size);

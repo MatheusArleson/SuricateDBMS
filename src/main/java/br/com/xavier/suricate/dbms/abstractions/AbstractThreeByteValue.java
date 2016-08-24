@@ -33,6 +33,12 @@ public class AbstractThreeByteValue
 	}
 	
 	@Override
+	public IThreeByteValue fromByteArray(byte[] bytes) {
+		setValueBinary(bytes);
+		return this;
+	}
+	
+	@Override
 	public Integer getValue() {
 		if(value == null){
 			return null;

@@ -2,7 +2,7 @@ package br.com.xavier.suricate.dbms.interfaces;
 
 import java.io.Serializable;
 
-public interface IBinarizable<T> 
+public interface ISerializable 
 		extends Serializable {
 	
 	byte[] toByteArray();
