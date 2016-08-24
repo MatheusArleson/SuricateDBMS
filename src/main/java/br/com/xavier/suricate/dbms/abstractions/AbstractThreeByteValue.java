@@ -1,6 +1,7 @@
 package br.com.xavier.suricate.dbms.abstractions;
 
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
 
@@ -26,18 +27,47 @@ public class AbstractThreeByteValue
 		setValue(value);
 	}
 	
+	public AbstractThreeByteValue(ByteOrder byteEndianness, byte[] value) {
+		this(byteEndianness);
+		setValueBinary(value);
+	}
+	
 	//XXX OVERRIDE METHODS
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(value);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractThreeByteValue other = (AbstractThreeByteValue) obj;
+		if (!Arrays.equals(value, other.value))
+			return false;
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return "AbstractThreeByteValue [" 
+			+ "byteEndianess=" + byteEndianess
+			+ ", value=" + Arrays.toString(value) 
+		+ "]";
+	}
+
 	@Override
 	public byte[] toByteArray() {
 		return getValueBinary();
 	}
-	
-	@Override
-	public IThreeByteValue fromByteArray(byte[] bytes) {
-		setValueBinary(bytes);
-		return this;
-	}
-	
+
 	@Override
 	public Integer getValue() {
 		if(value == null){

@@ -3,7 +3,7 @@ package br.com.xavier.suricate.dbms.interfaces;
 import java.nio.ByteOrder;
 
 public interface IThreeByteValue 
-		extends ISerializable, IDeserializable<IThreeByteValue> {
+		extends IBinarizable {
 	
 	static final Integer MAX_VALUE = 8388607;
 	

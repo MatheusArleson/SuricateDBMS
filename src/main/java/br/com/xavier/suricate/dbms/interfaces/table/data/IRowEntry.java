@@ -2,11 +2,10 @@ package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.interfaces.IDeserializable;
-import br.com.xavier.suricate.dbms.interfaces.ISerializable;
+import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
 
 public interface IRowEntry 
-		extends ISerializable, IDeserializable<IRowEntry> {
+		extends IBinarizable {
 	
 	Integer getSize();
 	void setSize(Integer size);

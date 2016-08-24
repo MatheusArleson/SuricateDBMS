@@ -17,6 +17,10 @@ public class BigEndianThreeBytesValue
 		super(ByteOrder.BIG_ENDIAN, value);
 	}
 	
+	public BigEndianThreeBytesValue(byte[] value){
+		super(ByteOrder.BIG_ENDIAN, value);
+	}
+	
 	public static void main(String[] args) {
 		BigEndianThreeBytesValue tbv = new BigEndianThreeBytesValue();
 		tbv.setValue(511);

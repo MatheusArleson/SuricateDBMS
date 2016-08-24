@@ -1,10 +1,11 @@
 package br.com.xavier.suricate.dbms.interfaces;
 
+import java.io.IOException;
 import java.io.Serializable;
 
-public interface ISerializable 
+public interface IBinarizable
 		extends Serializable {
 	
-	byte[] toByteArray();
+	byte[] toByteArray() throws IOException;
 	
 }

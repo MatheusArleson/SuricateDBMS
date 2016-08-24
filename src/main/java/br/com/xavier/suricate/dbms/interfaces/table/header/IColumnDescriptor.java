@@ -1,11 +1,10 @@
 package br.com.xavier.suricate.dbms.interfaces.table.header;
 
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
-import br.com.xavier.suricate.dbms.interfaces.IDeserializableCollection;
-import br.com.xavier.suricate.dbms.interfaces.ISerializable;
+import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
 
 public interface IColumnDescriptor
-		extends ISerializable, IDeserializableCollection<IColumnDescriptor> {
+		extends IBinarizable {
 	
 	String getName();
 	void setName(String name);

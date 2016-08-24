@@ -1,12 +1,14 @@
 package br.com.xavier.suricate.dbms.abstractions.table.header;
 
+import java.io.IOException;
 import java.util.Collection;
 
+import br.com.xavier.suricate.dbms.impl.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
 
-public class AbstractTableHeaderBlock
+public abstract class AbstractTableHeaderBlock
 		implements ITableHeaderBlock {
 	
 	private static final long serialVersionUID = -5842811196037749943L;
@@ -15,30 +17,64 @@ public class AbstractTableHeaderBlock
 	private ITableHeaderBlockContent headerContent;
 	private Collection<IColumnDescriptor> columnsDescriptors;
 	
-	//XXX CONSTRUCTOR
+	//XXX CONSTRUCTORS
 	public AbstractTableHeaderBlock() {
 		super();
 		this.headerContent = null;
 		this.columnsDescriptors = null;
 	}
 	
-	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
-		super();
+	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent) {
+		this();
 		this.headerContent = headerContent;
+		this.columnsDescriptors = null;
+	}
+	
+	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
+		this(headerContent);
 		this.columnsDescriptors = columnsDescriptors;
 	}
 
+	//XXX OVERRIDE METHODS
 	@Override
-	public byte[] toByteArray() {
-		return null;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result	+ ((headerContent == null) ? 0 : headerContent.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractTableHeaderBlock other = (AbstractTableHeaderBlock) obj;
+		if (headerContent == null) {
+			if (other.headerContent != null)
+				return false;
+		} else if (!headerContent.equals(other.headerContent))
+			return false;
+		return true;
 	}
 	
 	@Override
-	public ITableHeaderBlock fromByteArray(byte[] bytes) {
-		this.headerContent = headerContent.fromByteArray(bytes);
-		this.columnsDescriptors = ;
+	public String toString() {
+		return "AbstractTableHeaderBlock [" 
+			+ "headerContent=" + headerContent
+		+ "]";
+	}
+
+	@Override
+	public byte[] toByteArray() throws IOException {
+		byte[] headerContentBytes = headerContent.toByteArray();
+		byte[] columnsDescriptorsBytes = Factory.toByteArray(columnsDescriptors);
 		
-		return this;
+		byte[] byteArray = Factory.toByteArray(headerContentBytes, columnsDescriptorsBytes);
+		return byteArray;
 	}
 
 	//XXX GETTERS/SETTERS

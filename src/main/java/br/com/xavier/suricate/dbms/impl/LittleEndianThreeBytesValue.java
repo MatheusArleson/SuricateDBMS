@@ -17,4 +17,8 @@ public class LittleEndianThreeBytesValue
 		super(ByteOrder.LITTLE_ENDIAN, value);
 	}
 	
+	public LittleEndianThreeBytesValue(byte[] value){
+		super(ByteOrder.LITTLE_ENDIAN, value);
+	}
+	
 }
