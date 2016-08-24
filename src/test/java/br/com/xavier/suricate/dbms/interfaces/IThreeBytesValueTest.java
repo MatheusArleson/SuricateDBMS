@@ -1,9 +1,13 @@
 package br.com.xavier.suricate.dbms.interfaces;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsNot.*;
-import static org.hamcrest.core.IsEqual.*;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -20,12 +24,14 @@ public abstract class IThreeBytesValueTest {
 	//XXX TEST PROPERTIES
 	protected Integer maxValue;
 	protected Integer number;
-	
-	//TODO FIXME DONT MIX LITTLE AND BIG ENDIAN ON THE TEST
-	//protected byte[] numberBinary;
+	protected byte[] numberBinarySameEndianness;
 	
 	//XXX CONSTRUCTOR
 	public IThreeBytesValueTest() {	}
+	
+	public IThreeBytesValueTest(Integer number) {
+		this.number = number;
+	}
 	
 	//XXX ABSTRACT METHODS
 	protected abstract IThreeByteValue getInstance();
@@ -34,14 +40,27 @@ public abstract class IThreeBytesValueTest {
 	@Before
 	public void setup() {
 		instance = getInstance();
-		
+		if(number == null){
+			number = 511;
+		}
 		maxValue = IThreeByteValue.MAX_VALUE;
-		number = 99;
+		numberBinarySameEndianness = generateSameEndiannessByteArray(instance, number);
+	}
+
+	private byte[] generateSameEndiannessByteArray(IThreeByteValue instance, Integer number) {
+		byte[] numberBinarySameEndianness = new byte[3];
+		ByteOrder byteEndianness = instance.getByteEndianness();
 		
-		numberBinary = new byte[3];
+		byte[] array = ByteBuffer.allocate(4).order(byteEndianness).putInt(number).array();
+		ByteBuffer buffer = ByteBuffer.wrap(array).order(byteEndianness);
 		
-		byte[] array = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(number).array();
-		ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).get(numberBinary);
+		if(byteEndianness.equals(ByteOrder.BIG_ENDIAN)){
+			buffer.get();
+		}
+		
+		buffer.get(numberBinarySameEndianness);
+		
+		return numberBinarySameEndianness;
 	}
 
 	//XXX AFTER METHODS
@@ -49,7 +68,7 @@ public abstract class IThreeBytesValueTest {
 	public void destroy() {
 		instance = null;
 		number = null;
-		numberBinary = null;
+		numberBinarySameEndianness = null;
 	}
 	
 	// XXX TEST METHODS
@@ -133,16 +152,23 @@ public abstract class IThreeBytesValueTest {
 	public void mustReturnSameValueBinaryForValueSetted(){
 		instance.setValue(number);
 		
-		assertThat(numberBinary, is(equalTo(instance.getValueBinary())));
+		assertThat(numberBinarySameEndianness, is(equalTo(instance.getValueBinary())));
 		
 	}
 	
 	@Test
 	public void mustNotReturnDifferentValueBinaryForValueSetted(){
+		byte swapValue = (byte) -1;
 		instance.setValue(number);
-		numberBinary[0] = 0;
 		
-		assertThat(numberBinary, not(equalTo(instance.getValueBinary())));
+		Byte inPlace = numberBinarySameEndianness[1];
+		if(!inPlace.equals(swapValue)){
+			numberBinarySameEndianness[1] = -1;
+		} else {
+			numberBinarySameEndianness[1] = 0;
+		}
+		
+		assertThat(numberBinarySameEndianness, not(equalTo(instance.getValueBinary())));
 	}
 	
 }

@@ -11,12 +11,10 @@ public class AbstractThreeByteValue
 	
 	//XXX PROPERTIES
 	private static final int FULL_BYTE = 0xFF;
-	private static final int HALF_BYTE = 0x0F;
+	
 	private final ByteOrder byteEndianess;
 	
-	
 	private byte[] value;
-	
 	
 	//XXX CONSTRUCTOR
 	public AbstractThreeByteValue(ByteOrder byteEndianness) {
@@ -51,11 +49,11 @@ public class AbstractThreeByteValue
 	}
 
 	private Integer getValueLittleEndian() {
-		return (value[2] & FULL_BYTE) | ((value[1] & FULL_BYTE) << 8) | ((value[0] & FULL_BYTE) << 16);
+		return (value[0] & FULL_BYTE) | ((value[1] & FULL_BYTE) << 8) | ((value[2] & FULL_BYTE) << 16);
 	}
 
 	private Integer getValueBigEndian() {
-		return (value[0] & FULL_BYTE) | ((value[1] & FULL_BYTE) << 8) | ((value[2] & FULL_BYTE) << 16);
+		return (value[2] & FULL_BYTE) | ((value[1] & FULL_BYTE) << 8) | ((value[0] & FULL_BYTE) << 16);
 	}
 
 	@Override
@@ -82,15 +80,15 @@ public class AbstractThreeByteValue
 	}
 
 	private void setValueBigEndian(Integer value) {
-		this.value[0] = (byte) (value & FULL_BYTE);
-		this.value[1] = (byte) ((value >> 8) & FULL_BYTE);
-		this.value[2] = (byte) ((value >> 16) & FULL_BYTE);
-	}
-	
-	private void setValueLittleEndian(Integer value) {
 		this.value[2] = (byte) (value & FULL_BYTE);
 		this.value[1] = (byte) ((value >> 8) & FULL_BYTE);
 		this.value[0] = (byte) ((value >> 16) & FULL_BYTE);
+	}
+	
+	private void setValueLittleEndian(Integer value) {
+		this.value[0] = (byte) (value & FULL_BYTE);
+		this.value[1] = (byte) ((value >> 8) & FULL_BYTE);
+		this.value[2] = (byte) ((value >> 16) & FULL_BYTE);
 	}
 
 	//XXX GETTERS/SETTERS

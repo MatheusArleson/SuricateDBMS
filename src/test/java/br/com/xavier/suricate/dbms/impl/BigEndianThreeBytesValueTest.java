@@ -10,5 +10,5 @@ public class BigEndianThreeBytesValueTest
 	protected IThreeByteValue getInstance() {
 		return new BigEndianThreeBytesValue();
 	}
-
+	
 }

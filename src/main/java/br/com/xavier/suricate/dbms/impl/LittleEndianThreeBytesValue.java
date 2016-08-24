@@ -17,16 +17,4 @@ public class LittleEndianThreeBytesValue
 		super(ByteOrder.LITTLE_ENDIAN, value);
 	}
 	
-	public static void main(String[] args) {
-		int value = 255;
-		
-		LittleEndianThreeBytesValue tbv = new LittleEndianThreeBytesValue();
-		tbv.setValue(value);
-		System.out.println(tbv.getValue());
-		
-		BigEndianThreeBytesValue tbv2 = new BigEndianThreeBytesValue();
-		tbv2.setValue(value);
-		System.out.println(tbv2.getValue());
-	}
-
 }
