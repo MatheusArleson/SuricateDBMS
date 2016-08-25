@@ -7,6 +7,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+
 @RunWith(Parameterized.class)
 public abstract class IThreeBytesValueParametrizedTest extends IThreeBytesValueTest {
 

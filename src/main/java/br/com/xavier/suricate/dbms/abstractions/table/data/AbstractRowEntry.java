@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.impl.Factory;
+import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 

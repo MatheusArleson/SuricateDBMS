@@ -1,8 +1,8 @@
-package br.com.xavier.suricate.dbms.impl;
+package br.com.xavier.suricate.dbms.impl.low;
 
 import java.nio.ByteOrder;
 
-import br.com.xavier.suricate.dbms.abstractions.AbstractThreeByteValue;
+import br.com.xavier.suricate.dbms.abstractions.low.AbstractThreeByteValue;
 
 public class BigEndianThreeBytesValue 
 		extends AbstractThreeByteValue {

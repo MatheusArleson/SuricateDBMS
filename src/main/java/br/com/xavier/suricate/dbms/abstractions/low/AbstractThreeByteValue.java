@@ -1,9 +1,9 @@
-package br.com.xavier.suricate.dbms.abstractions;
+package br.com.xavier.suricate.dbms.abstractions.low;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
 public class AbstractThreeByteValue
 		implements IThreeByteValue {

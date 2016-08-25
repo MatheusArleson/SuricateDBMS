@@ -1,6 +1,6 @@
 package br.com.xavier.suricate.dbms.interfaces.table.data;
 
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 
 public interface IColumnEntry
 		extends IBinarizable {

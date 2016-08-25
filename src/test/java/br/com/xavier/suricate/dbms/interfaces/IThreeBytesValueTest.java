@@ -16,6 +16,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+
 public abstract class IThreeBytesValueTest {
 	
 	//XXX TEST SUBJECT

@@ -1,7 +1,7 @@
 package br.com.xavier.suricate.dbms.interfaces.table.header;
 
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 
 public interface IColumnDescriptor
 		extends IBinarizable {

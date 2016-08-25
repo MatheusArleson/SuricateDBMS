@@ -5,7 +5,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.impl.Factory;
+import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
@@ -17,6 +17,7 @@ public class AbstractTable
 
 	//XXX PROPERTIES
 	private RandomAccessFile file;
+	
 	private ITableHeaderBlock headerBlock;
 	private Collection<ITableDataBlock> dataBlocks;
 	

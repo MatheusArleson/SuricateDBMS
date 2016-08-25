@@ -1,4 +1,4 @@
-package br.com.xavier.suricate.dbms.impl;
+package br.com.xavier.suricate.dbms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 
 public class Factory {
 	

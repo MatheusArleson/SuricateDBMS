@@ -1,4 +1,4 @@
-package br.com.xavier.suricate.dbms.interfaces;
+package br.com.xavier.suricate.dbms.interfaces.low;
 
 import java.io.IOException;
 import java.io.Serializable;

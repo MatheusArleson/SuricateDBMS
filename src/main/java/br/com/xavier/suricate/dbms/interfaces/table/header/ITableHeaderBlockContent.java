@@ -1,8 +1,8 @@
 package br.com.xavier.suricate.dbms.interfaces.table.header;
 
 import br.com.xavier.suricate.dbms.enums.TableStatus;
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
-import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
 public interface ITableHeaderBlockContent
 		extends IBinarizable {

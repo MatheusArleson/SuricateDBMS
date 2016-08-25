@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import br.com.xavier.suricate.dbms.enums.TableStatus;
-import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
 
 public abstract class AbstractTableHeaderBlockContent 
@@ -15,9 +15,9 @@ public abstract class AbstractTableHeaderBlockContent
 	//XXX PROPERTIES
 	private Byte tableId;
 	private IThreeByteValue blockSize;
-	private Short headerSize;
-	private Integer nextFreeBlockId;
 	private TableStatus tableStatus;
+	private Integer nextFreeBlockId;
+	private Short headerSize;
 	
 	//XXX CONSTRUCTOR
 	public AbstractTableHeaderBlockContent(
@@ -103,9 +103,9 @@ public abstract class AbstractTableHeaderBlockContent
 			
 			bb.put(getTableId());
 			bb.put(getBlockSize().getValueBinary());
-			bb.putShort(getHeaderSize());
-			bb.putInt(getNextFreeBlockId());
 			bb.put(tableStatus.getValue());
+			bb.putInt(getNextFreeBlockId());
+			bb.putShort(getHeaderSize());
 			
 			
 			return bb.array();

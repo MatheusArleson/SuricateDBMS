@@ -3,7 +3,7 @@ package br.com.xavier.suricate.dbms.abstractions.table.header;
 import java.io.IOException;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.impl.Factory;
+import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;

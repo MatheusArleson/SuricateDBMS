@@ -2,7 +2,7 @@ package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 
 public interface ITableDataBlock
 		extends IBinarizable {

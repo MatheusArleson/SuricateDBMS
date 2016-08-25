@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.impl.Factory;
+import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;

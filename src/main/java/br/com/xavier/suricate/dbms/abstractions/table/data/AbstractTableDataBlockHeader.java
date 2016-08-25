@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
-import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
 
 public abstract class AbstractTableDataBlockHeader 
@@ -89,15 +89,12 @@ public abstract class AbstractTableDataBlockHeader
 		
 		try {
 			
-			bb = ByteBuffer.allocate(11);
+			bb = ByteBuffer.allocate(8);
 			
 			bb.put(getTableId());
 			bb.put(getBlockId().getValueBinary());
-			
-			//XXX TODO FIXME FINISH CLASS
-			//bb.put(getType().);
-			
-			bb.put(bytesUsedInBlock.getValueBinary());
+			bb.put(getType().getValue());
+			bb.put(getBytesUsedInBlock().getValueBinary());
 			
 			return bb.array();
 			

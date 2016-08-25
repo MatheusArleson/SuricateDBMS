@@ -1,8 +1,8 @@
 package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
-import br.com.xavier.suricate.dbms.interfaces.IBinarizable;
-import br.com.xavier.suricate.dbms.interfaces.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
 public interface ITableDataBlockHeader
 		extends IBinarizable {
