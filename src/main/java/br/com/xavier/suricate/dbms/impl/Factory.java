@@ -2,6 +2,7 @@ package br.com.xavier.suricate.dbms.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -58,6 +59,10 @@ public class Factory {
 				IOUtils.closeQuietly(baos);
 			}
 		}
+	}
+	
+	public static byte[] toByteArray(String str) throws IOException {
+		return str.getBytes(StandardCharsets.UTF_16);
 	}
 	
 	

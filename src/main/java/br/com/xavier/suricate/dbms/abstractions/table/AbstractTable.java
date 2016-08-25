@@ -1,7 +1,8 @@
-package br.com.xavier.suricate.dbms.abstractions.table.header;
+package br.com.xavier.suricate.dbms.abstractions.table;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.impl.Factory;
@@ -23,19 +24,60 @@ public class AbstractTable
 	public AbstractTable(RandomAccessFile file) {
 		super();
 		this.file = file;
+		parseHeaderBlock();
 	}
-	
+
 	public AbstractTable(RandomAccessFile file, ITableHeaderBlock headerBlock) {
-		this(file);
+		super();
+		this.file = file;
 		this.headerBlock = headerBlock;
+		this.dataBlocks = new ArrayList<>();
 	}
 	
 	public AbstractTable(RandomAccessFile file, ITableHeaderBlock headerBlock, Collection<ITableDataBlock> dataBlocks) {
 		this(file, headerBlock);
-		this.dataBlocks = dataBlocks;
+		this.dataBlocks.addAll(dataBlocks);
+	}
+	
+	//XXX CONSTRUCTOR METHODS
+	private void parseHeaderBlock() {
+		// TODO Auto-generated method stub
 	}
 
 	//XXX OVERRIDE METHODS
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((headerBlock == null) ? 0 : headerBlock.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractTable other = (AbstractTable) obj;
+		if (headerBlock == null) {
+			if (other.headerBlock != null)
+				return false;
+		} else if (!headerBlock.equals(other.headerBlock))
+			return false;
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return "AbstractTable [" 
+			+ "file=" + file 
+			+ ", headerBlock=" + headerBlock 
+		+ "]";
+	}
+
 	@Override
 	public byte[] toByteArray() throws IOException {
 		byte[] headerBlockBytes = headerBlock.toByteArray();

@@ -3,7 +3,7 @@ package br.com.xavier.suricate.dbms.impl.table;
 import java.io.RandomAccessFile;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.abstractions.table.header.AbstractTable;
+import br.com.xavier.suricate.dbms.abstractions.table.AbstractTable;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 

@@ -10,12 +10,12 @@ public interface ITableHeaderBlockContent
 	Byte getTableId();
 	void setTableId(Byte tableId);
 	IThreeByteValue getBlockSize();
-	void setBlockSize(IThreeByteValue id);
+	void setBlockSize(IThreeByteValue blockSize);
 	Short getHeaderSize();
 	void setHeaderSize(Short headerSize);
 	Integer getNextFreeBlockId();
 	void setNextFreeBlockId(Integer nextFreeBlockId);
 	TableStatus getStatus();
-	void setStatus(TableStatus status);
+	void setStatus(TableStatus tableStatus);
 	
 }
