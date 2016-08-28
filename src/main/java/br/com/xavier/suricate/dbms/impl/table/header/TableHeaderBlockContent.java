@@ -1,5 +1,7 @@
 package br.com.xavier.suricate.dbms.impl.table.header;
 
+import java.io.IOException;
+
 import br.com.xavier.suricate.dbms.abstractions.table.header.AbstractTableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.enums.TableStatus;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
@@ -18,5 +20,8 @@ public final class TableHeaderBlockContent
 	) {
 		super(tableId, blockSize, headerSize, nextFreeBlockId, tableStatus);
 	}
-
+	
+	public TableHeaderBlockContent(byte[] bytes) throws IOException {
+		super(bytes);
+	}
 }

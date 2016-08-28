@@ -2,10 +2,10 @@ package br.com.xavier.suricate.dbms.abstractions.table;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.Factory;
+import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
@@ -22,27 +22,19 @@ public class AbstractTable
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTable(RandomAccessFile file) {
+	public AbstractTable(RandomAccessFile file) throws IOException {
 		super();
 		this.file = file;
-		parseHeaderBlock();
-	}
-
-	public AbstractTable(RandomAccessFile file, ITableHeaderBlock headerBlock) {
-		super();
-		this.file = file;
-		this.headerBlock = headerBlock;
-		this.dataBlocks = new ArrayList<>();
+		
+		byte[] bytes = Factory.getTableHeaderBlockBytes(file);
+		this.headerBlock = new TableHeaderBlock(bytes);
 	}
 	
 	public AbstractTable(RandomAccessFile file, ITableHeaderBlock headerBlock, Collection<ITableDataBlock> dataBlocks) {
-		this(file, headerBlock);
+		super();
+		this.file = file;
+		this.headerBlock = headerBlock;
 		this.dataBlocks.addAll(dataBlocks);
-	}
-	
-	//XXX CONSTRUCTOR METHODS
-	private void parseHeaderBlock() {
-		// TODO Auto-generated method stub
 	}
 
 	//XXX OVERRIDE METHODS

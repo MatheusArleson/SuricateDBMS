@@ -15,6 +15,22 @@ public enum TableStatus {
 		this.value = new Byte(value);
 	}
 	
+	//XXX METHODS
+	public static TableStatus getStatusByValue(Byte value){
+		if(value == null){
+			return null;
+		}
+		
+		for (TableStatus status : values()) {
+			if(status.getValue().equals(value)){
+				return status;
+			}
+		}
+		
+		return null;
+	}
+	
+	//XXX GETTERS
 	public String getDescription() {
 		return description;
 	}

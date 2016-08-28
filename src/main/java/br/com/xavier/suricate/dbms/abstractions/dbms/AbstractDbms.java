@@ -8,13 +8,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
+import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.enums.FileModes;
-import br.com.xavier.suricate.dbms.impl.dbms.RowManager;
-import br.com.xavier.suricate.dbms.impl.dbms.TableManager;
 import br.com.xavier.suricate.dbms.impl.table.Table;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
-import br.com.xavier.suricate.dbms.interfaces.dbms.IRowManager;
-import br.com.xavier.suricate.dbms.interfaces.dbms.ITableManager;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
@@ -25,12 +22,11 @@ public class AbstractDbms
 	private static final long serialVersionUID = 664946624331325685L;
 	
 	//XXX DEPENDENCIES
-	private ITableManager tableManager;
-	private IRowManager rowManager; 
 
 	//XXX WORKSPACE PROPERTIES
 	private FilenameFilter fileNameFilter;
 	private File workspaceFolder;
+	private Collection<ITable> tables; 
 	
 	//XXX CONSTRUCTOR
 	public AbstractDbms(FilenameFilter fileNameFilter, File workspaceFolder) throws IOException {
@@ -63,76 +59,81 @@ public class AbstractDbms
 	private void analyzeWorkspace() throws IOException{
 		File[] files = workspaceFolder.listFiles(fileNameFilter);
 		
-		if(files == null || files.length == 0){
-			processEmptyWorkspace();
-		} else {
+		if(files != null && files.length != 0){
 			processWorkspace(files);
 		}
-		
-	}
-	
-	private void processEmptyWorkspace() {
-		this.tableManager = new TableManager(new ArrayList<>());
-		this.rowManager = new RowManager();
 	}
 
 	private void processWorkspace(File[] files) throws IOException {
+		this.tables = new ArrayList<>();
+		
 		for (File file : files) {
 			RandomAccessFile raf = new RandomAccessFile(file, FileModes.READ_WRITE.getMode());
+			Factory.getTableHeaderBlockBytes(raf);
 			Table table = new Table(raf);
+			tables.add(table);
 		}
 	}
 	
 	//XXX OVERRIDE METHODS
 	@Override
-	public File getWorkspace() {
+	public File getWorkspace() throws IOException {
 		return workspaceFolder;
 	}
 
 	@Override
-	public void setWorkspace(File workspaceFolder) {
+	public void setWorkspace(File workspaceFolder) throws IOException {
 		this.workspaceFolder = workspaceFolder;
+		initialize();
 	}
-	
+
 	//XXX DELEGATE TABLE MANAGER METHODS
 	@Override
 	public Collection<ITable> getAllTables() {
-		return tableManager.getAllTables();
+		return new ArrayList<>(tables);
 	}
 
 	@Override
 	public void createTable(ITable table) {
-		tableManager.createTable(table);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public void removeTable(ITable table) {
-		tableManager.removeTable(table);
+		// TODO Auto-generated method stub
+		
 	}
 	
-	//XXX DELEGATE ROW MANAGER METHODS
+	//XXX ROW MANAGER METHODS
 	@Override
 	public Long getRowCount(ITable table) {
-		return rowManager.getRowCount(table);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public Collection<IRowEntry> getAllRows(ITable table) {
-		return rowManager.getAllRows(table);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void createRow(IRowEntry rowEntry) {
-		rowManager.createRow(rowEntry);
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public IRowEntry getRow(IRowId rowId) {
-		return rowManager.getRow(rowId);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	public void deleteRow(IRowId rowId) {
-		rowManager.deleteRow(rowId);
+		// TODO Auto-generated method stub
+		
 	}
+
 }

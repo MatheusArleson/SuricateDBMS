@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.Factory;
+import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
@@ -18,21 +19,16 @@ public abstract class AbstractTableHeaderBlock
 	private Collection<IColumnDescriptor> columnsDescriptors;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTableHeaderBlock() {
-		super();
-		this.headerContent = null;
-		this.columnsDescriptors = null;
-	}
-	
-	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent) {
-		this();
-		this.headerContent = headerContent;
-		this.columnsDescriptors = null;
-	}
-	
 	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
-		this(headerContent);
+		super();
+		this.headerContent = headerContent;
 		this.columnsDescriptors = columnsDescriptors;
+	}
+	
+	public AbstractTableHeaderBlock(byte[] bytes) throws IOException {
+		super();
+		this.headerContent = new TableHeaderBlockContent(bytes);
+		//this.columnsDescriptors = new ArrayList<>();
 	}
 
 	//XXX OVERRIDE METHODS

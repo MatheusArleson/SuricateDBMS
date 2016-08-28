@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.impl.table.header;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.abstractions.table.header.AbstractTableHeaderBlock;
@@ -12,16 +13,12 @@ public final class TableHeaderBlock
 	private static final long serialVersionUID = 3103600835022231237L;
 	
 	//XXX CONSTRUCTORS
-	public TableHeaderBlock() {
-		super();
-	}
-	
-	public TableHeaderBlock(ITableHeaderBlockContent headerContent) {
-		super(headerContent);
-	}
-	
 	public TableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
 		super(headerContent, columnsDescriptors);
+	}
+	
+	public TableHeaderBlock(byte[] bytes) throws IOException {
+		super(bytes);
 	}
 	
 
