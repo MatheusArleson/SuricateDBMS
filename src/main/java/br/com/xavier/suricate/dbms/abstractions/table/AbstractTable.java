@@ -95,11 +95,6 @@ public class AbstractTable
 	}
 
 	@Override
-	public void setFile(RandomAccessFile file) {
-		this.file = file;
-	}
-
-	@Override
 	public ITableHeaderBlock getHeaderBlock() {
 		return headerBlock;
 	}

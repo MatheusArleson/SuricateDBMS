@@ -11,7 +11,6 @@ public interface ITable
 		extends IBinarizable {
 	
 	RandomAccessFile getFile();
-	void setFile(RandomAccessFile file);
 	ITableHeaderBlock getHeaderBlock();
 	void setHeaderBlock(ITableHeaderBlock header);
 	Collection<ITableDataBlock> getDataBlocks();
