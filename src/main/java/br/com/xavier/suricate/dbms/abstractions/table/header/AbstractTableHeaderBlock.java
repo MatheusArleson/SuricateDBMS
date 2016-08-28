@@ -3,7 +3,6 @@ package br.com.xavier.suricate.dbms.abstractions.table.header;
 import java.io.IOException;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
@@ -62,15 +61,6 @@ public abstract class AbstractTableHeaderBlock
 		return "AbstractTableHeaderBlock [" 
 			+ "headerContent=" + headerContent
 		+ "]";
-	}
-
-	@Override
-	public byte[] toByteArray() throws IOException {
-		byte[] headerContentBytes = headerContent.toByteArray();
-		byte[] columnsDescriptorsBytes = Factory.toByteArray(columnsDescriptors);
-		
-		byte[] byteArray = Factory.toByteArray(headerContentBytes, columnsDescriptorsBytes);
-		return byteArray;
 	}
 
 	//XXX GETTERS/SETTERS

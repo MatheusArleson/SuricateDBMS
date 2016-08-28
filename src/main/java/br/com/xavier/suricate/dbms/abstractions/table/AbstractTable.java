@@ -2,6 +2,7 @@ package br.com.xavier.suricate.dbms.abstractions.table;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.Factory;
@@ -22,19 +23,17 @@ public class AbstractTable
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
+	public AbstractTable() throws IOException {
+		super();
+	}
+	
 	public AbstractTable(RandomAccessFile file) throws IOException {
 		super();
 		this.file = file;
 		
 		byte[] bytes = Factory.getTableHeaderBlockBytes(file);
 		this.headerBlock = new TableHeaderBlock(bytes);
-	}
-	
-	public AbstractTable(RandomAccessFile file, ITableHeaderBlock headerBlock, Collection<ITableDataBlock> dataBlocks) {
-		super();
-		this.file = file;
-		this.headerBlock = headerBlock;
-		this.dataBlocks.addAll(dataBlocks);
+		this.dataBlocks = new ArrayList<>();
 	}
 
 	//XXX OVERRIDE METHODS
@@ -69,15 +68,6 @@ public class AbstractTable
 			+ "file=" + file 
 			+ ", headerBlock=" + headerBlock 
 		+ "]";
-	}
-
-	@Override
-	public byte[] toByteArray() throws IOException {
-		byte[] headerBlockBytes = headerBlock.toByteArray();
-		byte[] dataBlocksBytes = Factory.toByteArray(dataBlocks);
-		
-		byte[] byteArray = Factory.toByteArray(headerBlockBytes, dataBlocksBytes);
-		return byteArray;
 	}
 
 	//XXX GETTERS/SETTERS

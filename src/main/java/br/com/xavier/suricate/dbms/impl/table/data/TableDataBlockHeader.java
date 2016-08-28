@@ -1,5 +1,7 @@
 package br.com.xavier.suricate.dbms.impl.table.data;
 
+import java.io.IOException;
+
 import br.com.xavier.suricate.dbms.abstractions.table.data.AbstractTableDataBlockHeader;
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
@@ -16,6 +18,10 @@ public class TableDataBlockHeader
 		IThreeByteValue bytesUsedInBlock
 	) {
 		super(tableId, blockId, type, bytesUsedInBlock);
+	}
+	
+	public TableDataBlockHeader(byte[] bytes) throws IOException {
+		super(bytes);
 	}
 
 }

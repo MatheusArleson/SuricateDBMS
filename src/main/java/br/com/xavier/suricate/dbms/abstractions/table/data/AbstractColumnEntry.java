@@ -1,7 +1,6 @@
 package br.com.xavier.suricate.dbms.abstractions.table.data;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
@@ -21,7 +20,11 @@ public class AbstractColumnEntry
 		this.contentSize = contentSize;
 		this.content = content;
 	}
-
+	
+	public AbstractColumnEntry(byte[] bytes) throws IOException {
+		fromByteArray(bytes);
+	}
+	
 	//XXX OVERRIDE METHODS
 	@Override
 	public int hashCode() {
@@ -56,24 +59,6 @@ public class AbstractColumnEntry
 		return "AbstractColumnEntry [" 
 			+ "contentSize=" + contentSize 
 		+ "]";
-	}
-
-	@Override
-	public byte[] toByteArray() throws IOException {
-		ByteBuffer bb = null;
-		
-		try {
-			int size = content.length + 2;
-			bb = ByteBuffer.allocate(size);
-			
-			bb.putShort(getContentSize());
-			bb.put(content);
-			
-			return bb.array();
-			
-		} catch (Exception e) {
-			throw e;
-		} 
 	}
 
 	//XXX GETTERS/SETTERS

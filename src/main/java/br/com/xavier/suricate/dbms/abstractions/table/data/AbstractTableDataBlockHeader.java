@@ -1,7 +1,6 @@
 package br.com.xavier.suricate.dbms.abstractions.table.data;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
@@ -30,6 +29,11 @@ public abstract class AbstractTableDataBlockHeader
 		this.blockId = blockId;
 		this.type = type;
 		this.bytesUsedInBlock = bytesUsedInBlock;
+	}
+	
+	public AbstractTableDataBlockHeader(byte[] bytes) throws IOException {
+		super();
+		fromByteArray(bytes);
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -83,26 +87,6 @@ public abstract class AbstractTableDataBlockHeader
 		+ "]";
 	}
 
-	@Override
-	public byte[] toByteArray() throws IOException {
-		ByteBuffer bb = null;
-		
-		try {
-			
-			bb = ByteBuffer.allocate(8);
-			
-			bb.put(getTableId());
-			bb.put(getBlockId().getValueBinary());
-			bb.put(getType().getValue());
-			bb.put(getBytesUsedInBlock().getValueBinary());
-			
-			return bb.array();
-			
-		} catch (Exception e) {
-			throw e;
-		} 
-	}
-	
 	//XXX GETTERS/SETTERS
 	@Override
 	public Byte getTableId() {

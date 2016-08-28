@@ -27,23 +27,15 @@ public interface ITableHeaderBlockContent
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
-		ByteBuffer bb = null;
-		
-		try {
+		ByteBuffer bb = ByteBuffer.allocate(BYTES_SIZE);
 			
-			bb = ByteBuffer.allocate(BYTES_SIZE);
+		bb.put(getTableId());
+		bb.put(getBlockSize().getValueBinary());
+		bb.put(getStatus().getValue());
+		bb.putInt(getNextFreeBlockId());
+		bb.putShort(getHeaderSize());
 			
-			bb.put(getTableId());
-			bb.put(getBlockSize().getValueBinary());
-			bb.put(getStatus().getValue());
-			bb.putInt(getNextFreeBlockId());
-			bb.putShort(getHeaderSize());
-			
-			
-			return bb.array();
-		} catch (Exception e) {
-			throw e;
-		} 
+		return bb.array();
 	}
 	
 	default void fromByteArray(byte[] bytes) throws IOException {
@@ -63,7 +55,11 @@ public interface ITableHeaderBlockContent
 		
 		Byte statusByte = bb.get();
 		TableStatus tableStatus = TableStatus.getStatusByValue(statusByte);
-		setStatus(tableStatus);
+		if(tableStatus == null){
+			throw new IOException("Unknow table status id : " + statusByte);
+		} else {
+			setStatus(tableStatus);
+		}
 		
 		Integer nextFreeBlockId = bb.getInt();
 		setNextFreeBlockId(nextFreeBlockId);

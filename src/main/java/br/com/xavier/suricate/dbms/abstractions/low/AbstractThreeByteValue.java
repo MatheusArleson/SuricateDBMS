@@ -64,11 +64,6 @@ public class AbstractThreeByteValue
 	}
 
 	@Override
-	public byte[] toByteArray() {
-		return getValueBinary();
-	}
-
-	@Override
 	public Integer getValue() {
 		if(value == null){
 			return null;

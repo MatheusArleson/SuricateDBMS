@@ -68,6 +68,10 @@ public class Factory {
 		return str.getBytes(StandardCharsets.UTF_16);
 	}
 	
+	public static String fromByteArray(byte[] strBytes) {
+		return new String(strBytes, StandardCharsets.UTF_16);
+	}
+	
 	//XXX FILE METHODS
 	public static byte[] getTableHeaderBlockBytes(RandomAccessFile raf) throws IOException {
 		IThreeByteValue blockSize = getBlockSize(raf);

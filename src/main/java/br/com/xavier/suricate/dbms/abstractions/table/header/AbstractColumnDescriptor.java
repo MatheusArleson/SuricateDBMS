@@ -1,9 +1,7 @@
 package br.com.xavier.suricate.dbms.abstractions.table.header;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 
@@ -23,6 +21,11 @@ public abstract class AbstractColumnDescriptor
 		this.name = name;
 		this.type = type;
 		this.size = size;
+	}
+	
+	public AbstractColumnDescriptor(byte[] bytes) throws IOException {
+		super();
+		fromByteArray(bytes);
 	}
 
 	//XXX OVERRIDE METHODS
@@ -67,27 +70,6 @@ public abstract class AbstractColumnDescriptor
 			+ ", type=" + type 
 			+ ", size=" + size 
 		+ "]";
-	}
-	
-	@Override
-	public byte[] toByteArray() throws IOException {
-		ByteBuffer bb = null;
-		
-		try {
-			
-			bb = ByteBuffer.allocate(64);
-			byte[] byteArray = Factory.toByteArray(name);
-			bb.put(byteArray);
-			
-			bb.position(61);
-			
-			bb.putShort(getType().getId());
-			bb.putShort(getSize());
-			
-			return bb.array();
-		} catch (Exception e) {
-			throw e;
-		} 
 	}
 
 	//XXX GETTERS/SETTERS

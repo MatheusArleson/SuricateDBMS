@@ -2,16 +2,33 @@ package br.com.xavier.suricate.dbms.enums;
 
 public enum TableBlockType {
 	
-	;
+	//XXX ENUM MEMBERS
+	DATA("Data", "1"),
+	INDEX("Index", "2");
 	
 	//XXX PROPERTIES
 	private final String description;
-	private final Byte value;
+	private final Byte id;
 	
 	//XXX CONSTRUCTOR
-	private TableBlockType(String description, Byte value) {
+	private TableBlockType(String description, String id) {
 		this.description = description;
-		this.value = value;
+		this.id = new Byte(id);
+	}
+	
+	//XXX METHODS
+	public static TableBlockType getTypeById(Byte id){
+		if(id == null){
+			return null;
+		}
+		
+		for (TableBlockType type : values()) {
+			if(type.getId().equals(id)){
+				return type;
+			}
+		}
+		
+		return null;
 	}
 	
 	//XXX GETTERS
@@ -19,8 +36,8 @@ public enum TableBlockType {
 		return description;
 	}
 	
-	public Byte getValue() {
-		return value;
+	public Byte getId() {
+		return id;
 	}
 
 }

@@ -1,11 +1,9 @@
 package br.com.xavier.suricate.dbms.abstractions.table.data;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 
@@ -28,6 +26,10 @@ public class AbstractRowEntry
 	public AbstractRowEntry(Integer size, Collection<IColumnEntry> columnsEntries) {
 		this(size);
 		this.columnsEntries.addAll(columnsEntries);
+	}
+	
+	public AbstractRowEntry(byte[] bytes) throws IOException {
+		fromByteArray(bytes);
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -68,27 +70,6 @@ public class AbstractRowEntry
 			+ "size=" + size 
 			+ ", columnsEntries=" + columnsEntries 
 		+ "]";
-	}
-
-	@Override
-	public byte[] toByteArray() throws IOException {
-		ByteBuffer bb = null;
-		
-		try {
-			byte[] columnsEntriesBytes = Factory.toByteArray(columnsEntries);
-			Integer size = columnsEntriesBytes.length + 4;
-			
-			bb = ByteBuffer.allocate(size);
-			
-			bb.putInt(getSize());
-			bb.put(columnsEntriesBytes);
-			
-			return bb.array();
-			
-		} catch (Exception e) {
-			throw e;
-		} 
-		
 	}
 
 	//XXX GETTERS/SETTERS

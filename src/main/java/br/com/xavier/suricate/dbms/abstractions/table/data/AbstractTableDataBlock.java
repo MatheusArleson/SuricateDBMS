@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
@@ -28,6 +27,11 @@ public abstract class AbstractTableDataBlock
 	public AbstractTableDataBlock(ITableDataBlockHeader header, Collection<IRowEntry> rows) {
 		this(header);
 		this.rows.addAll(rows);
+	}
+	
+	public AbstractTableDataBlock(byte[] bytes) throws IOException {
+		super();
+		fromByteArray(bytes);
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -63,15 +67,6 @@ public abstract class AbstractTableDataBlock
 		+ "]";
 	}
 
-	@Override
-	public byte[] toByteArray() throws IOException {
-		byte[] headerBytes = header.toByteArray();
-		byte[] rowsBytes = Factory.toByteArray(rows);
-		
-		byte[] byteArray = Factory.toByteArray(headerBytes, rowsBytes);
-		return byteArray;
-	}
-
 	//XXX GETTERS/SETTERS
 	@Override
 	public ITableDataBlockHeader getHeader() {
@@ -79,7 +74,7 @@ public abstract class AbstractTableDataBlock
 	}
 
 	@Override
-	public void getHeader(ITableDataBlockHeader header) {
+	public void setHeader(ITableDataBlockHeader header) {
 		this.header = header;
 	}
 

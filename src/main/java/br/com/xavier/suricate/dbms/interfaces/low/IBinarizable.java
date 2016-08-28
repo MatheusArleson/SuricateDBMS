@@ -7,5 +7,5 @@ public interface IBinarizable
 		extends Serializable {
 	
 	byte[] toByteArray() throws IOException;
-	
+	void fromByteArray(byte[] bytes) throws IOException;
 }

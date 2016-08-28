@@ -1,5 +1,7 @@
 package br.com.xavier.suricate.dbms.impl.table.header;
 
+import java.io.IOException;
+
 import br.com.xavier.suricate.dbms.abstractions.table.header.AbstractColumnDescriptor;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 
@@ -11,5 +13,8 @@ public class ColumnDescriptor
 	public ColumnDescriptor(String name, ColumnsTypes type, Short size) {
 		super(name, type, size);
 	}
-
+	
+	public ColumnDescriptor(byte[] bytes) throws IOException {
+		super(bytes);
+	}
 }

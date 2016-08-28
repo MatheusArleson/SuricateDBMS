@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.interfaces.low;
 
+import java.io.IOException;
 import java.nio.ByteOrder;
 
 public interface IThreeByteValue 
@@ -12,5 +13,15 @@ public interface IThreeByteValue
 	void setValue(Integer value);
 	byte[] getValueBinary();
 	void setValueBinary(byte[] value);
-
+	
+	@Override
+	default byte[] toByteArray() {
+		return getValueBinary();
+	}
+	
+	@Override
+	default void fromByteArray(byte[] bytes) throws IOException {
+		setValueBinary(bytes);
+	}
+	
 }
