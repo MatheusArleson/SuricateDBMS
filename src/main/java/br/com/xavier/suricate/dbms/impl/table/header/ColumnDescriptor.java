@@ -9,6 +9,10 @@ public class ColumnDescriptor
 		extends AbstractColumnDescriptor {
 	
 	private static final long serialVersionUID = -1276506675217862799L;
+	
+	public ColumnDescriptor() {
+		super();
+	}
 
 	public ColumnDescriptor(String name, ColumnsTypes type, Short size) {
 		super(name, type, size);

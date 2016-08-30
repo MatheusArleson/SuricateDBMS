@@ -279,22 +279,4 @@ public abstract class ITableHeaderBlockContentTest {
 		instance.fromByteArray(bytes);
 	}
 	
-	@Test
-	public void toAndFromByteArrayTest() throws IOException {
-		instance.setTableId(tableId);
-		instance.setBlockSize(blockSize);
-		instance.setHeaderSize(headerSize);
-		instance.setNextFreeBlockId(nextFreeBlockId);
-		instance.setStatus(tableStatus);
-		
-		byte[] bytes = instance.toByteArray();
-		instance.fromByteArray(bytes);
-		
-		assertEquals(tableId, instance.getTableId());
-		assertEquals(blockSize, instance.getBlockSize());
-		assertEquals(headerSize, instance.getHeaderSize());
-		assertEquals(nextFreeBlockId, instance.getNextFreeBlockId());
-		assertEquals(tableStatus, instance.getStatus());
-	}
-	
 }

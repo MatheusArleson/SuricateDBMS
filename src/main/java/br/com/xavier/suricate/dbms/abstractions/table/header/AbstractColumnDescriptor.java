@@ -16,11 +16,16 @@ public abstract class AbstractColumnDescriptor
 	private Short size;
 	
 	//XXX CONSTRUCTORS
+	public AbstractColumnDescriptor() {
+		super();
+	}
+	
 	public AbstractColumnDescriptor(String name, ColumnsTypes type, Short size) {
 		super();
-		this.name = name;
 		this.type = type;
 		this.size = size;
+		
+		setName(name);
 	}
 	
 	public AbstractColumnDescriptor(byte[] bytes) throws IOException {
@@ -72,15 +77,58 @@ public abstract class AbstractColumnDescriptor
 		+ "]";
 	}
 
+	@Override
+	public void setName(String name) {
+		if(name != null && name.length() > IColumnDescriptor.MAX_COLUMN_NAME_LENGTH){
+			throw new IllegalArgumentException("Maximum length for column name is " + IColumnDescriptor.MAX_COLUMN_NAME_LENGTH + " characters.");
+		}
+		
+		this.name = name;
+	}
+	
+	@Override
+	public void setType(ColumnsTypes type) {
+		this.type = type;
+		
+		if(type != null){
+			switch (type) {
+			case INTEGER:
+				setSize(new Short("4"));
+				return;
+			
+			case STRING:
+			default:
+				setSize(null);
+				return;
+			}
+		}
+	}
+	
+	@Override
+	public void setSize(Short size) {
+		if(type == null){
+			this.size = size;
+			return;
+		}
+		
+		switch (type) {
+		case INTEGER:
+			this.size = new Short("4");
+			return;
+		
+		case STRING:
+		default:
+			this.size = size;
+			return;
+		}
+		
+		
+	}
+	
 	//XXX GETTERS/SETTERS
 	@Override
 	public String getName() {
 		return name;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	@Override
@@ -89,18 +137,8 @@ public abstract class AbstractColumnDescriptor
 	}
 
 	@Override
-	public void setType(ColumnsTypes type) {
-		this.type = type;
-	}
-
-	@Override
 	public Short getSize() {
 		return size;
-	}
-
-	@Override
-	public void setSize(Short size) {
-		this.size = size;
 	}
 
 }

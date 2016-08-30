@@ -15,11 +15,11 @@ public class Factory {
 	
 	//XXX STRING METHODS
 	public static String fromByteArray(byte[] bytes){
-		return ByteArrayUtils.fromByteArray(bytes, StandardCharsets.UTF_16);
+		return ByteArrayUtils.fromByteArray(bytes, StandardCharsets.UTF_16BE);
 	}
 	
 	public static byte[] toByteArray(String str) throws IOException {
-		return ByteArrayUtils.toByteArray(str, StandardCharsets.UTF_16);
+		return ByteArrayUtils.toByteArray(str, StandardCharsets.UTF_16BE);
 	}
 	
 	//XXX FILE METHODS

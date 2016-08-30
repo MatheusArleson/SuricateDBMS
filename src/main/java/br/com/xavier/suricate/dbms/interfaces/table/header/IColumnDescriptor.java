@@ -7,12 +7,14 @@ import java.util.Objects;
 import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.util.ObjectsUtils;
 import br.com.xavier.util.StringUtils;
 
 public interface IColumnDescriptor
 		extends IBinarizable {
 	
 	public static final int BYTES_SIZE = 64;
+	public static final int MAX_COLUMN_NAME_LENGTH = 30;
 	
 	String getName();
 	void setName(String name);
@@ -25,13 +27,22 @@ public interface IColumnDescriptor
 	default byte[] toByteArray() throws IOException {
 		ByteBuffer bb = ByteBuffer.allocate(64);
 		
-		byte[] byteArray = Factory.toByteArray(getName());
+		String columnName = getName();
+		ColumnsTypes columnType = getType();
+		Short columnSize = getSize();
+		
+		boolean anyNull = ObjectsUtils.anyNull(columnName, columnType, columnSize);
+		if(anyNull){
+			throw new IOException("To transform to byte[] all properties must not be null.");
+		}
+		
+		byte[] byteArray = Factory.toByteArray(columnName);
 		bb.put(byteArray);
 		
-		bb.position(61);
+		bb.position(60);
 		
-		bb.putShort(getType().getId());
-		bb.putShort(getSize());
+		bb.putShort(columnType.getId());
+		bb.putShort(columnSize);
 		
 		return bb.array();
 	}
@@ -49,13 +60,14 @@ public interface IColumnDescriptor
 		byte[] nameBuffer = new byte[60];
 		bb.get(nameBuffer);
 		String name = Factory.fromByteArray(nameBuffer);
+		
 		if(StringUtils.isNullOrEmpty(name)){
 			throw new IOException("Null name for column descriptor");
 		} else {
-			setName(name);
+			setName(name.trim());
 		}
 		
-		bb.position(61);
+		bb.position(60);
 		
 		Short columnTypeId = bb.getShort();
 		ColumnsTypes type = ColumnsTypes.getById(columnTypeId);

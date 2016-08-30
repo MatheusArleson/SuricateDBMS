@@ -32,10 +32,11 @@ public abstract class AbstractTableHeaderBlockContent
 	) {
 		super();
 		this.tableId = tableId;
-		this.blockSize = blockSize;
 		this.headerSize = headerSize;
 		this.nextFreeBlockId = nextFreeBlockId;
 		this.tableStatus = tableStatus;
+		
+		setBlockSize(blockSize);
 	}
 	
 	public AbstractTableHeaderBlockContent(byte[] bytes) throws IOException {
