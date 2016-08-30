@@ -3,7 +3,8 @@ package br.com.xavier.suricate.dbms.enums;
 public enum TableStatus {
 	
 	//XXX ENUM MEMBERS
-	VALID("VALID", "1");
+	VALID("VALID", "1"),
+	INVALID("INVALID", "2");
 	
 	//XXX PROPERTIES
 	private final String description;

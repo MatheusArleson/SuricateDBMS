@@ -11,6 +11,10 @@ public final class TableHeaderBlockContent
 	
 	private static final long serialVersionUID = -2148776571184121789L;
 
+	public TableHeaderBlockContent() {
+		super();
+	}
+	
 	public TableHeaderBlockContent(
 		Byte tableId, 
 		IThreeByteValue blockSize, 

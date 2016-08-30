@@ -19,6 +19,10 @@ public abstract class AbstractTableHeaderBlockContent
 	private Short headerSize;
 	
 	//XXX CONSTRUCTOR
+	public AbstractTableHeaderBlockContent() {
+		super();
+	}
+	
 	public AbstractTableHeaderBlockContent(
 		Byte tableId, 
 		IThreeByteValue blockSize, 
@@ -95,6 +99,15 @@ public abstract class AbstractTableHeaderBlockContent
 			+ ", tableStatus=" + tableStatus 
 		+ "]";
 	}
+	
+	@Override
+	public void setBlockSize(IThreeByteValue blockSize) {
+		if(blockSize.getValue() < ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE){
+			throw new IllegalArgumentException("Block size must be greather than " + ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE + " bytes.");
+		}
+		
+		this.blockSize = blockSize;
+	}
 
 	//XXX GETTERS/SETTERS
 	@Override
@@ -110,11 +123,6 @@ public abstract class AbstractTableHeaderBlockContent
 	@Override
 	public IThreeByteValue getBlockSize() {
 		return blockSize;
-	}
-
-	@Override
-	public void setBlockSize(IThreeByteValue blockSize) {
-		this.blockSize = blockSize;
 	}
 
 	@Override

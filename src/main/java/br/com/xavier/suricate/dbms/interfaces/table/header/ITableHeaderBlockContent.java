@@ -13,6 +13,7 @@ public interface ITableHeaderBlockContent
 		extends IBinarizable {
 	
 	public static final int BYTES_SIZE = 11;
+	public static final int MINUMUN_BLOCK_SIZE = 75;
 	
 	Byte getTableId();
 	void setTableId(Byte tableId);

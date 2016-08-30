@@ -1,4 +1,4 @@
-package br.com.xavier.suricate.dbms.interfaces;
+package br.com.xavier.suricate.dbms.interfaces.low;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -15,8 +15,6 @@ import java.nio.ByteOrder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
 public abstract class IThreeBytesValueTest {
 	

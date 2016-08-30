@@ -10,10 +10,6 @@ public final class Table
 
 	private static final long serialVersionUID = 4864024392240777959L;
 	
-	public Table() throws IOException {
-		super();
-	}
-	
 	public Table(RandomAccessFile file) throws IOException {
 		super(file);
 	}

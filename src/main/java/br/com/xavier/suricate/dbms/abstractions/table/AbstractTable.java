@@ -23,10 +23,6 @@ public class AbstractTable
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTable() throws IOException {
-		super();
-	}
-	
 	public AbstractTable(RandomAccessFile file) throws IOException {
 		super();
 		this.file = file;

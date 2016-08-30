@@ -1,8 +1,7 @@
-package br.com.xavier.suricate.dbms.impl;
+package br.com.xavier.suricate.dbms.impl.low;
 
-import br.com.xavier.suricate.dbms.impl.low.LittleEndianThreeBytesValue;
-import br.com.xavier.suricate.dbms.interfaces.IThreeBytesValueParametrizedTest;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeBytesValueParametrizedTest;
 
 public class LittleEndianThreeBytesValueParametrizedTest 
 		extends IThreeBytesValueParametrizedTest {
