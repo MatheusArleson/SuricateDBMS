@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.impl.table.data.ColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.util.ByteArrayUtils;
 
 public interface IRowEntry 
 		extends IBinarizable {
@@ -20,7 +20,7 @@ public interface IRowEntry
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
-		byte[] columnsEntriesBytes = Factory.toByteArray(getColumnsEntries());
+		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(getColumnsEntries());
 		Integer size = columnsEntriesBytes.length + 4;
 		
 		ByteBuffer bb = ByteBuffer.allocate(size);

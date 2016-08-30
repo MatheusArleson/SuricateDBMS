@@ -102,7 +102,7 @@ public abstract class AbstractTableHeaderBlockContent
 	
 	@Override
 	public void setBlockSize(IThreeByteValue blockSize) {
-		if(blockSize.getValue() < ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE){
+		if(blockSize != null && blockSize.getValue() < ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE){
 			throw new IllegalArgumentException("Block size must be greather than " + ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE + " bytes.");
 		}
 		

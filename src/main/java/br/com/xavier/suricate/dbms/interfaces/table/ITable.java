@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
+import br.com.xavier.util.ByteArrayUtils;
 
 public interface ITable 
 		extends IBinarizable {
@@ -21,9 +21,9 @@ public interface ITable
 	@Override
 	default byte[] toByteArray() throws IOException {
 		byte[] headerBlockBytes = getHeaderBlock().toByteArray();
-		byte[] dataBlocksBytes = Factory.toByteArray(getDataBlocks());
+		byte[] dataBlocksBytes = ByteArrayUtils.toByteArray(getDataBlocks());
 		
-		byte[] byteArray = Factory.toByteArray(headerBlockBytes, dataBlocksBytes);
+		byte[] byteArray = ByteArrayUtils.toByteArray(headerBlockBytes, dataBlocksBytes);
 		return byteArray;
 	}
 	

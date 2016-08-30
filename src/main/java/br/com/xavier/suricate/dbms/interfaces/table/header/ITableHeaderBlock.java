@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.impl.table.header.ColumnDescriptor;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.util.ByteArrayUtils;
 
 public interface ITableHeaderBlock
 		extends IBinarizable {
@@ -22,9 +22,9 @@ public interface ITableHeaderBlock
 	@Override
 	default byte[] toByteArray() throws IOException {
 		byte[] headerContentBytes = getHeaderContent().toByteArray();
-		byte[] columnsDescriptorsBytes = Factory.toByteArray(getColumnsDescriptors());
+		byte[] columnsDescriptorsBytes = ByteArrayUtils.toByteArray(getColumnsDescriptors());
 		
-		byte[] byteArray = Factory.toByteArray(headerContentBytes, columnsDescriptorsBytes);
+		byte[] byteArray = ByteArrayUtils.toByteArray(headerContentBytes, columnsDescriptorsBytes);
 		return byteArray;
 	}
 	
