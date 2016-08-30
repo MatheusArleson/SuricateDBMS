@@ -18,7 +18,7 @@ public class Factory {
 		return ByteArrayUtils.fromByteArray(bytes, StandardCharsets.UTF_16BE);
 	}
 	
-	public static byte[] toByteArray(String str) throws IOException {
+	public static byte[] toByteArray(String str) {
 		return ByteArrayUtils.toByteArray(str, StandardCharsets.UTF_16BE);
 	}
 	

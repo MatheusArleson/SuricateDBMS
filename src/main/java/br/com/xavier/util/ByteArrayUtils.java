@@ -61,7 +61,7 @@ public final class ByteArrayUtils {
 		}
 	}
 	
-	public static byte[] toByteArray(String str, Charset charset) throws IOException {
+	public static byte[] toByteArray(String str, Charset charset) {
 		return str.getBytes(charset);
 	}
 	

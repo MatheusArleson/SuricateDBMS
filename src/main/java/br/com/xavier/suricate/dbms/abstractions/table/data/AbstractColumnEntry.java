@@ -14,7 +14,11 @@ public class AbstractColumnEntry
 	private Short contentSize;
 	private byte[] content;
 	
-	//XXX CONSTRUCTOR
+	//XXX CONSTRUCTORS
+	public AbstractColumnEntry() {
+		super();
+	}
+	
 	public AbstractColumnEntry(Short contentSize, byte[] content) {
 		super();
 		this.contentSize = contentSize;
@@ -24,7 +28,7 @@ public class AbstractColumnEntry
 	public AbstractColumnEntry(byte[] bytes) throws IOException {
 		fromByteArray(bytes);
 	}
-	
+
 	//XXX OVERRIDE METHODS
 	@Override
 	public int hashCode() {
@@ -60,6 +64,21 @@ public class AbstractColumnEntry
 			+ "contentSize=" + contentSize 
 		+ "]";
 	}
+	
+	@Override
+	public void setContent(byte[] content) {
+		if(content == null){
+			throw new NullPointerException("Content must not be null.");
+		}
+		
+		Integer contentLength = content.length;
+		if(contentLength > Short.MAX_VALUE){
+			throw new IllegalArgumentException("Maximum size for content is : " + Short.MAX_VALUE);
+		}
+		
+		this.content = content;
+		this.contentSize = contentLength.shortValue();
+	}
 
 	//XXX GETTERS/SETTERS
 	@Override
@@ -68,18 +87,8 @@ public class AbstractColumnEntry
 	}
 
 	@Override
-	public void setContentSize(Short size) {
-		this.contentSize = size;
-	}
-
-	@Override
 	public byte[] getContent() {
 		return content;
-	}
-
-	@Override
-	public void setContent(byte[] content) {
-		this.content = content;
 	}
 
 }

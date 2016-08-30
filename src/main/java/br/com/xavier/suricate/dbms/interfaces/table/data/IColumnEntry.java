@@ -10,7 +10,6 @@ public interface IColumnEntry
 		extends IBinarizable {
 	
 	Short getContentSize();
-	void setContentSize(Short size);
 	byte[] getContent();
 	void setContent(byte[] content);
 	
