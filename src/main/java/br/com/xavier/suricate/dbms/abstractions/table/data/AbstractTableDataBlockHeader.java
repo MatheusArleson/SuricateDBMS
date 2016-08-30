@@ -17,7 +17,11 @@ public abstract class AbstractTableDataBlockHeader
 	private TableBlockType type;
 	private IThreeByteValue bytesUsedInBlock;
 	
-	//XXX CONSTRUCTOR
+	//XXX CONSTRUCTORS
+	public AbstractTableDataBlockHeader() {
+		super();
+	}
+	
 	public AbstractTableDataBlockHeader(
 		Byte tableId, 
 		IThreeByteValue blockId, 
@@ -35,7 +39,7 @@ public abstract class AbstractTableDataBlockHeader
 		super();
 		fromByteArray(bytes);
 	}
-	
+
 	//XXX OVERRIDE METHODS
 	@Override
 	public int hashCode() {

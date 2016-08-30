@@ -8,6 +8,7 @@ import br.com.xavier.suricate.dbms.enums.TableBlockType;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+import br.com.xavier.util.ObjectsUtils;
 
 public interface ITableDataBlockHeader
 		extends IBinarizable {
@@ -27,10 +28,20 @@ public interface ITableDataBlockHeader
 	default byte[] toByteArray() throws IOException {
 		ByteBuffer bb = ByteBuffer.allocate(BYTES_SIZE);
 		
-		bb.put(getTableId());
-		bb.put(getBlockId().getValueBinary());
-		bb.put(getType().getId());
-		bb.put(getBytesUsedInBlock().getValueBinary());
+		Byte tableId = getTableId();
+		IThreeByteValue blockId = getBlockId();
+		TableBlockType type = getType();
+		IThreeByteValue bytesUsedInBlock = getBytesUsedInBlock();
+		
+		boolean anyNull = ObjectsUtils.anyNull(tableId, blockId, type, bytesUsedInBlock);
+		if(anyNull){
+			throw new IOException("To transform to byte[] all properties must not be null.");
+		}
+		
+		bb.put(tableId);
+		bb.put(blockId.getValueBinary());
+		bb.put(type.getId());
+		bb.put(bytesUsedInBlock.getValueBinary());
 		
 		return bb.array();
 	}
@@ -39,7 +50,7 @@ public interface ITableDataBlockHeader
 	default void fromByteArray(byte[] bytes) throws IOException {
 		Objects.requireNonNull(bytes, "bytes cannot be null");
 		
-		if(bytes.length < BYTES_SIZE){
+		if(bytes.length != BYTES_SIZE){
 			throw new IllegalArgumentException("bytes length must be of size : " + BYTES_SIZE);
 		}
 		
