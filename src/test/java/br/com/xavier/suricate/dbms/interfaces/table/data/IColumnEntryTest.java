@@ -1,10 +1,14 @@
 package br.com.xavier.suricate.dbms.interfaces.table.data;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +20,11 @@ public abstract class IColumnEntryTest {
 	private IColumnEntry instance;
 	
 	//XXX TEST PROPERTIES
+	byte[] content;
+	Short contentSize;
+	
+	byte[] otherContent;
+	Short otherContentSize;
 	
 	//XXX CONSTRUCTOR
 	public IColumnEntryTest() {}
@@ -35,6 +44,11 @@ public abstract class IColumnEntryTest {
 	}
 
 	private void setupProperties() {
+		 content = new String("content").getBytes(StandardCharsets.UTF_16BE);
+		 contentSize = new Integer(content.length).shortValue();
+		 
+		 otherContent = new String("otherContent").getBytes(StandardCharsets.UTF_16BE);
+		 contentSize = new Integer(content.length).shortValue();
 	}
 
 	//XXX AFTER METHODS
@@ -46,8 +60,6 @@ public abstract class IColumnEntryTest {
 	//XXX TEST METHODS
 	@Test
 	public void getContentSizeTestMustReturnNullIfContentIsNull(){
-		instance.setContent(null);
-		
 		Short contentSize = instance.getContentSize();
 		
 		assertNull(contentSize);
@@ -55,9 +67,6 @@ public abstract class IColumnEntryTest {
 	
 	@Test
 	public void getAndSetContentTest(){
-		byte[] content = new String("c").getBytes();
-		byte[] otherContent = new String("o").getBytes();
-		
 		instance.setContent(content);
 		
 		assertSame(content, instance.getContent());
@@ -66,7 +75,7 @@ public abstract class IColumnEntryTest {
 		instance.setContent(otherContent);
 		
 		assertSame(otherContent, instance.getContent());
-		assertNotSame(content, instance.getContent());
+		assertNotSame(content, instance.getContent());	
 	}
 	
 	@Test(expected = NullPointerException.class)
@@ -77,27 +86,61 @@ public abstract class IColumnEntryTest {
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void setContentMustThrowIllegalArgumentExceptionOnBytesLengthGreatherThanShortMaxValue(){
-		//TODO FIXME TERMINAR METHOD
-		instance.setContent(null);
+		byte[] content = new byte[Short.MAX_VALUE + 1];
+		
+		instance.setContent(content);
 	}
 	
 	@Test
-	public void setContentMustSetContentSizeToNullOnNonNullBytes(){
-		byte[] content = new String("c").getBytes();
-		Integer length = content.length;
-		Short contentSize = length.shortValue();
+	public void setContentMustNotThrowIllegalArgumentExceptionOnBytesLengthEqualThanShortMaxValue(){
+		byte[] content = new byte[Short.MAX_VALUE];
 		
 		instance.setContent(content);
-		
-		assertEquals(contentSize, instance.getContentSize());
-		
-		byte[] otherContent = new String("ccc").getBytes();
-		Short otherContentSize = new Short(String.valueOf(otherContent.length));
-		
-		instance.setContent(otherContent);
-		
-		assertEquals(otherContentSize, instance.getContentSize());
-		assertNotEquals(contentSize, instance.getContentSize());
 	}
 	
+	@Test
+	public void setContentMustNotThrowIllegalArgumentExceptionOnBytesLengthLessThanShortMaxValue(){
+		byte[] content = new byte[Short.MAX_VALUE - 1];
+		
+		instance.setContent(content);
+	}
+	
+	@Test
+	public void toByteArrayTest() throws IOException {
+		instance.setContent(content);
+		
+		byte[] bytes = instance.toByteArray();
+		
+		assertNotNull(bytes);
+		assertEquals(content.length + Short.BYTES, bytes.length);
+	}
+	
+	@Test(expected = IOException.class)
+	public void mustThrowIOExceptionOnNullContent() throws IOException {
+		instance.toByteArray();
+	}
+	
+	@Test(expected = IOException.class)
+	public void mustThrowIOExceptionOnNullContentSize() throws IOException {
+		
+		instance.toByteArray();
+	}
+	
+	@Test
+	public void fromByteArrayTest() throws IOException {
+		instance.setContent(content);
+		byte[] bytes = instance.toByteArray();
+		
+		instance.fromByteArray(bytes);
+		
+		assertArrayEquals(content, instance.getContent());
+		assertEquals(contentSize, instance.getContentSize());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void fromByteArrayMustThrowNullPointerExceptionOnNullByteArray() throws IOException {
+		byte[] nullBytes = null;
+		
+		instance.fromByteArray(nullBytes);
+	}
 }

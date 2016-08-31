@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.util.ObjectsUtils;
 
 public interface IColumnEntry
 		extends IBinarizable {
@@ -15,11 +16,19 @@ public interface IColumnEntry
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
-		int size = getContent().length + 2;
+		Short contentSize = getContentSize();
+		byte[] content = getContent();
+		
+		boolean anyNull = ObjectsUtils.anyNull(contentSize, content);
+		if(anyNull){
+			throw new IOException("To transform to byte[] all properties must not be null.");
+		}
+		
+		int size = content.length + Short.BYTES;
 		ByteBuffer bb = ByteBuffer.allocate(size);
 		
-		bb.putShort(getContentSize());
-		bb.put(getContent());
+		bb.putShort(contentSize);
+		bb.put(content);
 		
 		return bb.array();
 	}
