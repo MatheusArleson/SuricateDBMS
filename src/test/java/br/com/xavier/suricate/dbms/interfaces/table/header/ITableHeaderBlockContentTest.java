@@ -53,6 +53,11 @@ public abstract class ITableHeaderBlockContentTest {
 	@After
 	public void destroy() {
 		instance = null;
+		tableId = null;
+		blockSize = null;
+		headerSize = null;
+		nextFreeBlockId = null;
+		tableStatus = null;
 	}
 	
 	//XXX TEST METHODS

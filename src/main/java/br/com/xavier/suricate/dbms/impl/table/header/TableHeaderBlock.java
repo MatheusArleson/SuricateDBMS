@@ -13,6 +13,10 @@ public final class TableHeaderBlock
 	private static final long serialVersionUID = 3103600835022231237L;
 	
 	//XXX CONSTRUCTORS
+	public TableHeaderBlock() {
+		super();
+	}
+	
 	public TableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
 		super(headerContent, columnsDescriptors);
 	}
@@ -20,6 +24,5 @@ public final class TableHeaderBlock
 	public TableHeaderBlock(byte[] bytes) throws IOException {
 		super(bytes);
 	}
-	
 
 }

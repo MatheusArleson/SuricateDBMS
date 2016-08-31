@@ -49,6 +49,8 @@ public abstract class IColumnDescriptorTest {
 	@After
 	public void destroy() {
 		instance = null;
+		columnName = null;
+		size = null;
 	}
 	
 	//XXX TEST METHODS
@@ -239,7 +241,7 @@ public abstract class IColumnDescriptorTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullColumnName() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullColumnName() throws IOException {
 		instance.setName(null);
 		instance.setSize(size);
 		instance.setType(ColumnsTypes.STRING);
@@ -248,7 +250,7 @@ public abstract class IColumnDescriptorTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullColumnSize() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullColumnSize() throws IOException {
 		instance.setName(columnName);
 		instance.setSize(null);
 		instance.setType(ColumnsTypes.STRING);
@@ -257,7 +259,7 @@ public abstract class IColumnDescriptorTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullColumnType() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullColumnType() throws IOException {
 		instance.setName(columnName);
 		instance.setSize(size);
 		instance.setType(null);
@@ -272,6 +274,7 @@ public abstract class IColumnDescriptorTest {
 		instance.setSize(size);
 		byte[] bytes = instance.toByteArray();
 		
+		instance = getInstance();
 		instance.fromByteArray(bytes);
 		
 		assertEquals(columnName, instance.getName());

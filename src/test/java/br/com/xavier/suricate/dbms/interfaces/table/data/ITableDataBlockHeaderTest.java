@@ -52,6 +52,9 @@ public abstract class ITableDataBlockHeaderTest {
 	@After
 	public void destroy() {
 		instance = null;
+		tableId = null;
+		blockId = null;
+		bytesUsedInBlock = null;
 	}
 	
 	//XXX TEST METHODS

@@ -8,7 +8,7 @@ import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.util.ByteArrayUtils;
 
-public class Factory {
+public final class Factory {
 	
 	//XXX CONSTRUCTOR
 	private Factory(){}

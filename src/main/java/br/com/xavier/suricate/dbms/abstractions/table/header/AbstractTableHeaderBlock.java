@@ -2,11 +2,13 @@ package br.com.xavier.suricate.dbms.abstractions.table.header;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
+import br.com.xavier.util.ObjectsUtils;
 
 public abstract class AbstractTableHeaderBlock
 		implements ITableHeaderBlock {
@@ -18,6 +20,10 @@ public abstract class AbstractTableHeaderBlock
 	private Collection<IColumnDescriptor> columnsDescriptors;
 	
 	//XXX CONSTRUCTORS
+	public AbstractTableHeaderBlock() {
+		super();
+	}
+	
 	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
 		super();
 		this.headerContent = headerContent;
@@ -62,6 +68,29 @@ public abstract class AbstractTableHeaderBlock
 			+ "headerContent=" + headerContent
 		+ "]";
 	}
+	
+	@Override
+	public void setHeaderContent(ITableHeaderBlockContent headerContent) {
+		Objects.requireNonNull(headerContent, "Table header content instance must not be null");
+		
+		this.headerContent = headerContent;
+	}
+	
+	@Override
+	public void setColumnsDescriptor(Collection<IColumnDescriptor> columnsDescriptors) {
+		Objects.requireNonNull(columnsDescriptors, "Columns descriptors collection instance must not be null");
+		
+		if(columnsDescriptors.isEmpty()){
+			throw new IllegalArgumentException("Columns descriptors collection must not be empty.");
+		}
+		
+		boolean anyNull = ObjectsUtils.anyNull(columnsDescriptors.toArray());
+		if(anyNull){
+			throw new IllegalArgumentException("Columns descriptors collections must not have null values");
+		}
+		
+		this.columnsDescriptors = columnsDescriptors;
+	}
 
 	//XXX GETTERS/SETTERS
 	@Override
@@ -70,18 +99,8 @@ public abstract class AbstractTableHeaderBlock
 	}
 
 	@Override
-	public void setHeaderContent(ITableHeaderBlockContent headerContent) {
-		this.headerContent = headerContent;
-	}
-
-	@Override
 	public Collection<IColumnDescriptor> getColumnsDescriptors() {
 		return columnsDescriptors;
-	}
-
-	@Override
-	public void setColumnsDescriptor(Collection<IColumnDescriptor> columnsDescriptors) {
-		this.columnsDescriptors = columnsDescriptors;
 	}
 
 }

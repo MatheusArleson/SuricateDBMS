@@ -6,7 +6,7 @@ import br.com.xavier.suricate.dbms.abstractions.table.data.AbstractTableDataBloc
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
-public class TableDataBlockHeader 
+public final class TableDataBlockHeader 
 		extends AbstractTableDataBlockHeader {
 	
 	private static final long serialVersionUID = 3506634766337003130L;

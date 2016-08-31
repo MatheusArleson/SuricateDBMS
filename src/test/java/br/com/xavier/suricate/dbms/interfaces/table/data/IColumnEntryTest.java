@@ -55,6 +55,10 @@ public abstract class IColumnEntryTest {
 	@After
 	public void destroy() {
 		instance = null;
+		content = null;
+		contentSize = null;
+		otherContent = null;
+		otherContentSize = null;
 	}
 	
 	//XXX TEST METHODS

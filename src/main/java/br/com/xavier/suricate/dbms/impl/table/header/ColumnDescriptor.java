@@ -5,7 +5,7 @@ import java.io.IOException;
 import br.com.xavier.suricate.dbms.abstractions.table.header.AbstractColumnDescriptor;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 
-public class ColumnDescriptor
+public final class ColumnDescriptor
 		extends AbstractColumnDescriptor {
 	
 	private static final long serialVersionUID = -1276506675217862799L;

@@ -10,6 +10,7 @@ import br.com.xavier.suricate.dbms.impl.table.header.ColumnDescriptor;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 import br.com.xavier.util.ByteArrayUtils;
+import br.com.xavier.util.ObjectsUtils;
 
 public interface ITableHeaderBlock
 		extends IBinarizable {
@@ -21,8 +22,16 @@ public interface ITableHeaderBlock
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
-		byte[] headerContentBytes = getHeaderContent().toByteArray();
-		byte[] columnsDescriptorsBytes = ByteArrayUtils.toByteArray(getColumnsDescriptors());
+		ITableHeaderBlockContent headerContent = getHeaderContent();
+		Collection<IColumnDescriptor> columnsDescriptors = getColumnsDescriptors();
+		
+		boolean anyNull = ObjectsUtils.anyNull(headerContent, columnsDescriptors);
+		if(anyNull){
+			throw new IOException("To transform to byte[] all properties must not be null.");
+		}
+		
+		byte[] headerContentBytes = headerContent.toByteArray();
+		byte[] columnsDescriptorsBytes = ByteArrayUtils.toByteArray(columnsDescriptors);
 		
 		byte[] byteArray = ByteArrayUtils.toByteArray(headerContentBytes, columnsDescriptorsBytes);
 		return byteArray;
