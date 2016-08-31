@@ -1,9 +1,12 @@
 package br.com.xavier.suricate.dbms.abstractions.table.header;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
+import br.com.xavier.suricate.dbms.impl.table.header.ColumnDescriptor;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
@@ -32,8 +35,32 @@ public abstract class AbstractTableHeaderBlock
 	
 	public AbstractTableHeaderBlock(byte[] bytes) throws IOException {
 		super();
-		this.headerContent = new TableHeaderBlockContent(bytes);
-		//this.columnsDescriptors = new ArrayList<>();
+		this.headerContent = generateTableHeaderContent(bytes);
+		this.columnsDescriptors = generateColumnsDescriptors(bytes);
+	}
+
+	private TableHeaderBlockContent generateTableHeaderContent(byte[] bytes) throws IOException {
+		return new TableHeaderBlockContent(bytes);
+	}
+	
+	private Collection<IColumnDescriptor> generateColumnsDescriptors(byte[] bytes) throws IOException {		
+		ArrayList<IColumnDescriptor> columnsDescriptors = new ArrayList<>();
+		try{
+			ByteBuffer bb = ByteBuffer.wrap(bytes);
+			bb.position(ITableHeaderBlockContent.BYTES_SIZE);
+			
+			byte[] buffer = new byte[IColumnDescriptor.BYTES_SIZE];
+			while(bb.hasRemaining()){
+				bb.get(buffer);
+				IColumnDescriptor columnDesc = new ColumnDescriptor(buffer);
+				columnsDescriptors.add(columnDesc);
+			}
+			
+			return columnsDescriptors;
+			
+		} catch(Exception e){
+			throw new IOException("Error while parsing columns descriptors.", e);
+		}
 	}
 
 	//XXX OVERRIDE METHODS
@@ -86,7 +113,7 @@ public abstract class AbstractTableHeaderBlock
 		
 		boolean anyNull = ObjectsUtils.anyNull(columnsDescriptors.toArray());
 		if(anyNull){
-			throw new IllegalArgumentException("Columns descriptors collections must not have null values");
+			throw new IllegalArgumentException("Columns descriptors collections must not have null values.");
 		}
 		
 		this.columnsDescriptors = columnsDescriptors;

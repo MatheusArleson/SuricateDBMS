@@ -11,12 +11,12 @@ public final class RowEntry
 	
 	private static final long serialVersionUID = -1618950376653615597L;
 
-	public RowEntry(Integer size) {
-		super(size);
+	public RowEntry() {
+		super();
 	}
 	
-	public RowEntry(Integer size, Collection<IColumnEntry> columnsEntries) {
-		super(size, columnsEntries);
+	public RowEntry(Collection<IColumnEntry> columnsEntries) {
+		super(columnsEntries);
 	}
 	
 	public RowEntry(byte[] bytes) throws IOException {

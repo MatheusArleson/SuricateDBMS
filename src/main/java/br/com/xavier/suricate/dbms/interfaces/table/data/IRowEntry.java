@@ -14,7 +14,6 @@ public interface IRowEntry
 		extends IBinarizable {
 	
 	Integer getSize();
-	void setSize(Integer size);
 	Collection<IColumnEntry> getColumnsEntries();
 	void setColumnsEntries(Collection<IColumnEntry> columnsEntries);
 	
@@ -40,8 +39,6 @@ public interface IRowEntry
 		}
 		
 		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		Integer rowEntrySize = bb.getInt();
-		setSize(rowEntrySize);
 		
 		Collection<IColumnEntry> columnEntries = new ArrayList<>();
 		while(bb.hasRemaining()){
