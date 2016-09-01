@@ -29,10 +29,10 @@ public abstract class AbstractTableDataBlockHeader
 		IThreeByteValue bytesUsedInBlock
 	) {
 		super();
-		this.tableId = tableId;
-		this.blockId = blockId;
-		this.type = type;
-		this.bytesUsedInBlock = bytesUsedInBlock;
+		setTableId(tableId);
+		setBlockId(blockId);
+		setType(type);
+		setBytesUsedInBlock(bytesUsedInBlock);
 	}
 	
 	public AbstractTableDataBlockHeader(byte[] bytes) throws IOException {
@@ -94,21 +94,37 @@ public abstract class AbstractTableDataBlockHeader
 	//XXX GETTERS/SETTERS
 	@Override
 	public Byte getTableId() {
-		return tableId;
+		if(tableId == null){
+			return null;
+		}
+		
+		return new Byte(tableId);
 	}
 
 	@Override
 	public void setTableId(Byte id) {
+		if(id == null || id < 1){
+			throw new IllegalArgumentException("Table ID must be a positive non zero number.");
+		}
+		
 		this.tableId = id;
 	}
 
 	@Override
 	public IThreeByteValue getBlockId() {
-		return blockId;
+		if(blockId == null){
+			return null;
+		}
+		
+		return blockId.clone();
 	}
 
 	@Override
 	public void setBlockId(IThreeByteValue id) {
+		if(id == null || id.getValue() < 1){
+			throw new IllegalArgumentException("Block ID must be a positive non zero number.");
+		}
+		
 		this.blockId = id;
 	}
 
@@ -119,16 +135,28 @@ public abstract class AbstractTableDataBlockHeader
 
 	@Override
 	public void setType(TableBlockType type) {
+		if(type == null){
+			throw new IllegalArgumentException("Block type must be not null.");
+		}
+		
 		this.type = type;
 	}
 
 	@Override
 	public IThreeByteValue getBytesUsedInBlock() {
-		return bytesUsedInBlock;
+		if(bytesUsedInBlock == null){
+			return null;
+		}
+		
+		return bytesUsedInBlock.clone();
 	}
 
 	@Override
 	public void setBytesUsedInBlock(IThreeByteValue bytesUsedInBlock) {
+		if(bytesUsedInBlock == null || bytesUsedInBlock.getValue() < 1){
+			throw new IllegalArgumentException("Bytes used in block must be a positive non zero number.");
+		}
+		
 		this.bytesUsedInBlock = bytesUsedInBlock;
 	}
 

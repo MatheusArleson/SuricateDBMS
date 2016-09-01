@@ -7,6 +7,7 @@ public interface IThreeByteValue
 		extends IBinarizable, Cloneable {
 	
 	static final Integer MAX_VALUE = 8388607;
+	static final Integer MIN_VALUE = -8388607;
 	
 	ByteOrder getByteEndianness();
 	Integer getValue();

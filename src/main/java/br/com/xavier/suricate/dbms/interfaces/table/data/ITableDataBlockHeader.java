@@ -2,7 +2,6 @@ package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.enums.TableBlockType;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
@@ -48,29 +47,38 @@ public interface ITableDataBlockHeader
 	
 	@Override
 	default void fromByteArray(byte[] bytes) throws IOException {
-		Objects.requireNonNull(bytes, "bytes cannot be null");
-		
-		if(bytes.length != BYTES_SIZE){
-			throw new IllegalArgumentException("bytes length must be of size : " + BYTES_SIZE);
+		try {
+			if(bytes == null){
+				throw new IOException("bytes cannot be null");
+			}
+			
+			if(bytes.length != BYTES_SIZE){
+				throw new IOException("bytes length must be of size : " + BYTES_SIZE);
+			}
+			
+			ByteBuffer bb = ByteBuffer.wrap(bytes);
+			
+			Byte tableId = bb.get();
+			setTableId(tableId);
+			
+			byte[] blockIdBuffer = new byte[3];
+			bb.get(blockIdBuffer);
+			IThreeByteValue blockId = new BigEndianThreeBytesValue(blockIdBuffer);
+			setBlockId(blockId);
+			
+			Byte blockTypeId = bb.get();
+			TableBlockType type = TableBlockType.getTypeById(blockTypeId);
+			setType(type);
+			
+			byte[] bytesUserInBlockBuffer = new byte[3];
+			bb.get(bytesUserInBlockBuffer);
+			IThreeByteValue bytesUsedInBlock = new BigEndianThreeBytesValue(bytesUserInBlockBuffer);
+			setBytesUsedInBlock(bytesUsedInBlock);
+			
+		} catch(IOException e){
+			throw e;
+		} catch (Exception e) {
+			throw new IOException("Error while parsing bytes.", e);
 		}
-		
-		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		
-		Byte tableId = bb.get();
-		setTableId(tableId);
-		
-		byte[] blockIdBuffer = new byte[3];
-		bb.get(blockIdBuffer);
-		IThreeByteValue blockId = new BigEndianThreeBytesValue(blockIdBuffer);
-		setBlockId(blockId);
-		
-		Byte blockTypeId = bb.get();
-		TableBlockType type = TableBlockType.getTypeById(blockTypeId);
-		setType(type);
-		
-		byte[] bytesUserInBlockBuffer = new byte[3];
-		bb.get(bytesUserInBlockBuffer);
-		IThreeByteValue bytesUsedInBlock = new BigEndianThreeBytesValue(bytesUserInBlockBuffer);
-		setBytesUsedInBlock(bytesUsedInBlock);
 	}
 }

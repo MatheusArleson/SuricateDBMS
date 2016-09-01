@@ -15,6 +15,7 @@ public abstract class AbstractThreeByteValue
 	
 	private final ByteOrder byteEndianess;
 	
+	private boolean negative;
 	private byte[] value;
 	
 	//XXX CONSTRUCTOR
@@ -78,6 +79,10 @@ public abstract class AbstractThreeByteValue
 			number = getValueLittleEndian();
 		}
 		
+		if(negative){
+			number = number | (FULL_BYTE << 24);
+		}
+		
 		return number;
 	}
 
@@ -96,9 +101,15 @@ public abstract class AbstractThreeByteValue
 			return;
 		}
 		
-		if(value > MAX_VALUE){
-			throw new IllegalArgumentException("Number is greather than the maximun value of " + MAX_VALUE);
+		if(value < MIN_VALUE){
+			throw new IllegalArgumentException("Number is less than the minimum value of " + MIN_VALUE);
 		}
+		
+		if(value > MAX_VALUE){
+			throw new IllegalArgumentException("Number is greather than the maximum value of " + MAX_VALUE);
+		}
+		
+		negative = value < 0;
 		
 		if(this.value == null){
 			this.value = new byte[3];
@@ -123,6 +134,11 @@ public abstract class AbstractThreeByteValue
 		this.value[1] = (byte) ((value >> 8) & FULL_BYTE);
 		this.value[2] = (byte) ((value >> 16) & FULL_BYTE);
 	}
+	
+	@Override
+	public void setValueBinary(byte[] value) {
+		this.value = value;
+	}
 
 	//XXX GETTERS/SETTERS
 	@Override
@@ -133,11 +149,6 @@ public abstract class AbstractThreeByteValue
 	@Override
 	public byte[] getValueBinary() {
 		return value;
-	}
-
-	@Override
-	public void setValueBinary(byte[] value) {
-		this.value = value;
 	}
 
 }
