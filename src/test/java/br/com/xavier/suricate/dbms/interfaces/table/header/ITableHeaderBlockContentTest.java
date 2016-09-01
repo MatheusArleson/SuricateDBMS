@@ -3,6 +3,7 @@ package br.com.xavier.suricate.dbms.interfaces.table.header;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +24,14 @@ public abstract class ITableHeaderBlockContentTest {
 	private Short headerSize;
 	private Integer nextFreeBlockId;
 	private TableStatus tableStatus;
+	private byte[] propertiesBytes;
+	
+	private Byte otherTableId;
+	private IThreeByteValue otherBlockSize;
+	private Short otherHeaderSize;
+	private Integer otherNextFreeBlockId;
+	private TableStatus otherTableStatus;
+	private byte[] otherPropertiesBytes;
 	
 	//XXX CONSTRUCTOR
 	public ITableHeaderBlockContentTest() {	}
@@ -35,6 +44,7 @@ public abstract class ITableHeaderBlockContentTest {
 	public void setup() {
 		setupInstance();
 		setupProperties();
+		setupOtherProperties();
 	}
 
 	private void setupInstance() {
@@ -44,9 +54,53 @@ public abstract class ITableHeaderBlockContentTest {
 	private void setupProperties() {
 		this.tableId = new Byte("1");
 		this.blockSize = new BigEndianThreeBytesValue(ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE);
-		this.headerSize = new Short("3");
-		this.nextFreeBlockId = new Integer("4");
+		this.headerSize = new Short("2");
+		this.nextFreeBlockId = new Integer("3");
 		this.tableStatus = TableStatus.VALID;
+		
+		this.propertiesBytes = new byte[ITableHeaderBlockContent.BYTES_SIZE];
+		
+		propertiesBytes[0] = tableId;
+		propertiesBytes[1] = blockSize.getValueBinary()[0];
+		propertiesBytes[2] = blockSize.getValueBinary()[1];
+		propertiesBytes[3] = blockSize.getValueBinary()[2];
+		propertiesBytes[4] = tableStatus.getValue();
+		
+		byte[] nextFreeBlockIdBytes = ByteBuffer.allocate(4).putInt(nextFreeBlockId).array();
+		propertiesBytes[5] = nextFreeBlockIdBytes[0];
+		propertiesBytes[6] = nextFreeBlockIdBytes[1];
+		propertiesBytes[7] = nextFreeBlockIdBytes[2];
+		propertiesBytes[8] = nextFreeBlockIdBytes[3];
+		
+		byte[] headerSizeBytes = ByteBuffer.allocate(2).putShort(headerSize).array();
+		propertiesBytes[9] = headerSizeBytes[0]; 
+		propertiesBytes[10] = headerSizeBytes[1];		
+	}
+	
+	private void setupOtherProperties() {
+		this.otherTableId = new Byte(Byte.MAX_VALUE);
+		this.otherBlockSize = new BigEndianThreeBytesValue(ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE + 1);
+		this.otherHeaderSize = new Short(Short.MAX_VALUE);
+		this.otherNextFreeBlockId = new Integer(Integer.MAX_VALUE);
+		this.otherTableStatus = TableStatus.INVALID;
+		
+		this.otherPropertiesBytes = new byte[ITableHeaderBlockContent.BYTES_SIZE];
+		
+		otherPropertiesBytes[0] = otherTableId;
+		otherPropertiesBytes[1] = otherBlockSize.getValueBinary()[0];
+		otherPropertiesBytes[2] = otherBlockSize.getValueBinary()[1];
+		otherPropertiesBytes[3] = otherBlockSize.getValueBinary()[2];
+		otherPropertiesBytes[4] = otherTableStatus.getValue();
+		
+		byte[] nextFreeBlockIdBytes = ByteBuffer.allocate(4).putInt(otherNextFreeBlockId).array();
+		otherPropertiesBytes[5] = nextFreeBlockIdBytes[0];
+		otherPropertiesBytes[6] = nextFreeBlockIdBytes[1];
+		otherPropertiesBytes[7] = nextFreeBlockIdBytes[2];
+		otherPropertiesBytes[8] = nextFreeBlockIdBytes[3];
+		
+		byte[] headerSizeBytes = ByteBuffer.allocate(2).putShort(otherHeaderSize).array();
+		otherPropertiesBytes[9] = headerSizeBytes[0]; 
+		otherPropertiesBytes[10] = headerSizeBytes[1];	
 	}
 	
 	//XXX AFTER METHODS
@@ -58,109 +112,243 @@ public abstract class ITableHeaderBlockContentTest {
 		headerSize = null;
 		nextFreeBlockId = null;
 		tableStatus = null;
+		
+		otherTableId = null;
+		otherBlockSize = null;
+		otherHeaderSize = null;
+		otherNextFreeBlockId = null;
+		otherTableStatus = null;
 	}
 	
 	//XXX TEST METHODS
-	@Test
-	public void getAndSetTableIdTest(){
-		Byte otherTableId = new Byte("2");
-		
-		instance.setTableId(tableId);
-		
-		assertSame(tableId, instance.getTableId());
-		assertNotSame(otherTableId, instance.getTableId());
-		
-		instance.setTableId(otherTableId);
-		
-		assertSame(otherTableId, instance.getTableId());
-		assertNotSame(tableId, instance.getTableId());
-	}
 	
-	@Test
-	public void getAndSetBlockSizeTest(){
-		IThreeByteValue otherBlockSize = new BigEndianThreeBytesValue(8192);
-		
-		instance.setBlockSize(blockSize);
-		
-		assertSame(blockSize, instance.getBlockSize());
-		assertNotSame(otherBlockSize, instance.getTableId());
-		
-		instance.setBlockSize(otherBlockSize);
-		
-		assertSame(otherBlockSize, instance.getBlockSize());
-		assertNotSame(blockSize, instance.getBlockSize());
+	//-------------
+	// TABLE ID
+	//-------------
+	@Test(expected = IllegalArgumentException.class)
+	public void setTableIdMustThrowIllegalArgumentExceptionOnNullTableId(){
+		instance.setTableId(null);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
-	public void mustThrowIllegalArgumentExceptionOnSetBlockSizeLessThanMinimunBlockSize(){
+	public void setTableIdMustThrowIllegalArgumentExceptionOnNegativeTableId(){
+		instance.setTableId(Byte.MIN_VALUE);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setTableIdMustThrowIllegalArgumentExceptionOnZeroTableId(){
+		instance.setTableId(new Byte("0"));
+	}
+	
+	@Test
+	public void setTableIdMustNotThrowIllegalArgumentExceptionValidTableId(){
+		instance.setTableId(tableId);
+	}
+	
+	@Test
+	public void getTableIdReferenceMustBeAClone(){
+		instance.setTableId(tableId);
+		
+		assertNotSame(tableId, instance.getTableId());
+		assertEquals(tableId, instance.getTableId());
+	}
+	
+	@Test
+	public void getAndSetTableIdTest(){
+		instance.setTableId(tableId);
+		
+		assertNotSame(tableId, instance.getTableId());
+		assertEquals(tableId, instance.getTableId());
+		assertNotEquals(otherTableId, instance.getTableId());
+		
+		instance.setTableId(otherTableId);
+		
+		assertNotSame(otherTableId, instance.getTableId());
+		assertEquals(otherTableId, instance.getTableId());
+		assertNotEquals(tableId, instance.getTableId());
+	}
+	
+	//-------------
+	// BLOCK SIZE
+	//-------------
+	@Test
+	public void getBlockSizeReferenceMustBeAClone(){
+		instance.setBlockSize(blockSize);
+		
+		assertNotSame(blockSize, instance.getBlockSize());
+		assertEquals(blockSize, instance.getBlockSize());
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setBlockSizeMustThrowIllegalArgumentExceptionOnNullBlockSize(){
+		instance.setBlockSize(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setBlockSizeMustThrowIllegalArgumentExceptionOnNegativeBlockSize(){
+		instance.setBlockSize(new BigEndianThreeBytesValue(Integer.MIN_VALUE));
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setBlockSizeMustThrowIllegalArgumentExceptionOnZeroBlockSize(){
+		instance.setBlockSize(new BigEndianThreeBytesValue(0));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void setBlockMustThrowIllegalArgumentExceptionOnBlockSizeEqualsThanMinimunBlockSize(){
 		IThreeByteValue blockSize = new BigEndianThreeBytesValue(ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE - 1);
 		
 		instance.setBlockSize(blockSize);
 	}
 	
 	@Test
-	public void mustSetBlockSizeEqualsThanMinimunBlockSize(){
+	public void setBlockMustAcceptBlockSizeEqualsThanMinimunBlockSize(){
 		IThreeByteValue blockSize = new BigEndianThreeBytesValue(ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE);
 		
 		instance.setBlockSize(blockSize);
 		
-		assertSame(blockSize, instance.getBlockSize());
+		assertEquals(blockSize, instance.getBlockSize());
 	}
 	
 	@Test
-	public void mustSetBlockSizeGreatherThanMinimunBlockSize(){
+	public void setBlockMustAcceptBlockSizeGreatherThanMinimunBlockSize(){
 		IThreeByteValue blockSize = new BigEndianThreeBytesValue(ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE + 1);
 		
 		instance.setBlockSize(blockSize);
 		
-		assertSame(blockSize, instance.getBlockSize());
+		assertEquals(blockSize, instance.getBlockSize());
+	}
+	
+	@Test
+	public void getAndSetBlockSizeTest(){
+		instance.setBlockSize(blockSize);
+		
+		assertEquals(blockSize, instance.getBlockSize());
+		assertNotEquals(otherBlockSize, instance.getTableId());
+		
+		instance.setBlockSize(otherBlockSize);
+		
+		assertEquals(otherBlockSize, instance.getBlockSize());
+		assertNotEquals(blockSize, instance.getBlockSize());
+	}
+	
+	//-------------
+	// HEADER SIZE
+	//-------------
+	@Test
+	public void getHeaderSizeReferenceMustBeAClone(){
+		instance.setHeaderSize(headerSize);
+		
+		assertNotSame(headerSize, instance.getHeaderSize());
+		assertEquals(headerSize, instance.getHeaderSize());
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setHeaderSizeMustThrowIllegalArgumentExceptionOnNullHeaderSize(){
+		instance.setHeaderSize(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setHeaderSizeMustThrowIllegalArgumentExceptionOnNegativeHeaderSize(){
+		instance.setHeaderSize(Short.MIN_VALUE);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setHeaderSizeMustThrowIllegalArgumentExceptionOnZeroHeaderSize(){
+		instance.setHeaderSize(new Short("0"));
+	}
+	
+	@Test
+	public void setHeaderSizeMustNotThrowIllegalArgumentExceptionOnValidHeaderSize(){
+		instance.setHeaderSize(headerSize);
 	}
 	
 	@Test
 	public void getAndSetHeaderSizeTest(){
-		Short otherHeaderSize = new Short("2");
-		
 		instance.setHeaderSize(headerSize);
 		
-		assertSame(headerSize, instance.getHeaderSize());
-		assertNotSame(otherHeaderSize, instance.getHeaderSize());
+		assertEquals(headerSize, instance.getHeaderSize());
+		assertNotEquals(otherHeaderSize, instance.getHeaderSize());
 		
 		instance.setHeaderSize(otherHeaderSize);
 		
-		assertSame(otherHeaderSize, instance.getHeaderSize());
-		assertNotSame(headerSize, instance.getHeaderSize());
+		assertEquals(otherHeaderSize, instance.getHeaderSize());
+		assertNotEquals(headerSize, instance.getHeaderSize());
+	}
+	
+	//-------------
+	// NEXT FREE BLOCK
+	//-------------
+	@Test
+	public void getNextFreeBlockReferenceMustBeAClone(){
+		instance.setNextFreeBlockId(nextFreeBlockId);
+		
+		assertNotSame(nextFreeBlockId, instance.getNextFreeBlockId());
+		assertEquals(nextFreeBlockId, instance.getNextFreeBlockId());
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setNextFreeBlockIdMustThrowIllegalArgumentExceptionOnNullNextFreeBlockId(){
+		instance.setNextFreeBlockId(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setNextFreeBlockIdMustThrowIllegalArgumentExceptionOnNegativeNextFreeBlockId(){
+		instance.setNextFreeBlockId(-1);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setNextFreeBlockIdMustThrowIllegalArgumentExceptionOnZeroNextFreeBlockId(){
+		instance.setNextFreeBlockId(0);
+	}
+	
+	@Test
+	public void setNextFreeBlockIdMustNotThrowIllegalArgumentExceptionOnValidNextFreeBlockId(){
+		instance.setNextFreeBlockId(nextFreeBlockId);
 	}
 	
 	@Test
 	public void getAndSetNextFreeBlockTest(){
-		Integer otherNextFreeBlocke = new Integer("2");
-		
 		instance.setNextFreeBlockId(nextFreeBlockId);
 		
-		assertSame(nextFreeBlockId, instance.getNextFreeBlockId());
-		assertNotSame(otherNextFreeBlocke, instance.getNextFreeBlockId());
+		assertEquals(nextFreeBlockId, instance.getNextFreeBlockId());
+		assertNotEquals(otherNextFreeBlockId, instance.getNextFreeBlockId());
 		
-		instance.setNextFreeBlockId(otherNextFreeBlocke);
+		instance.setNextFreeBlockId(otherNextFreeBlockId);
 		
-		assertSame(otherNextFreeBlocke, instance.getNextFreeBlockId());
-		assertNotSame(nextFreeBlockId, instance.getNextFreeBlockId());
+		assertEquals(otherNextFreeBlockId, instance.getNextFreeBlockId());
+		assertNotEquals(nextFreeBlockId, instance.getNextFreeBlockId());
+	}
+
+	//-------------
+	// STATUS
+	//-------------
+	@Test(expected = IllegalArgumentException.class)
+	public void setStatusMustThrowIllegalArgumentExceptionOnNullStatus(){
+		instance.setStatus(null);
+	}
+	
+	@Test
+	public void setStatusMustNotThrowIllegalArgumentExceptionOnValidStatus(){
+		instance.setStatus(tableStatus);
 	}
 	
 	@Test
 	public void getAndSetStatusTest(){
-		TableStatus otherStatus = TableStatus.INVALID;
-		
 		instance.setStatus(tableStatus);
 		
 		assertSame(tableStatus, instance.getStatus());
-		assertNotSame(otherStatus, instance.getStatus());
+		assertNotSame(otherTableStatus, instance.getStatus());
 		
-		instance.setStatus(otherStatus);
+		instance.setStatus(otherTableStatus);
 		
-		assertSame(otherStatus, instance.getStatus());
+		assertSame(otherTableStatus, instance.getStatus());
 		assertNotSame(tableStatus, instance.getStatus());
 	}
 	
+	//-------------
+	// TO BYTE ARRAY
+	//-------------	
 	@Test
 	public void toByteArrayTest() throws IOException {
 		instance.setTableId(tableId);
@@ -177,7 +365,7 @@ public abstract class ITableHeaderBlockContentTest {
 	
 	@Test(expected = IOException.class)
 	public void mustThrowIOExceptionOnNullTableId() throws IOException {
-		instance.setTableId(null);
+		//instance.setTableId(null);
 		instance.setBlockSize(blockSize);
 		instance.setHeaderSize(headerSize);
 		instance.setNextFreeBlockId(nextFreeBlockId);
@@ -189,7 +377,7 @@ public abstract class ITableHeaderBlockContentTest {
 	@Test(expected = IOException.class)
 	public void mustThrowIOExceptionOnNullBlockSize() throws IOException {
 		instance.setTableId(tableId);
-		instance.setBlockSize(null);
+		//instance.setBlockSize(null);
 		instance.setHeaderSize(headerSize);
 		instance.setNextFreeBlockId(nextFreeBlockId);
 		instance.setStatus(tableStatus);
@@ -201,7 +389,7 @@ public abstract class ITableHeaderBlockContentTest {
 	public void mustThrowIOExceptionOnNullHeaderSize() throws IOException {
 		instance.setTableId(tableId);
 		instance.setBlockSize(blockSize);
-		instance.setHeaderSize(null);
+		//instance.setHeaderSize(null);
 		instance.setNextFreeBlockId(nextFreeBlockId);
 		instance.setStatus(tableStatus);
 		
@@ -213,7 +401,7 @@ public abstract class ITableHeaderBlockContentTest {
 		instance.setTableId(tableId);
 		instance.setBlockSize(blockSize);
 		instance.setHeaderSize(headerSize);
-		instance.setNextFreeBlockId(null);
+		//instance.setNextFreeBlockId(null);
 		instance.setStatus(tableStatus);
 		
 		instance.toByteArray();
@@ -225,28 +413,14 @@ public abstract class ITableHeaderBlockContentTest {
 		instance.setBlockSize(blockSize);
 		instance.setHeaderSize(headerSize);
 		instance.setNextFreeBlockId(nextFreeBlockId);
-		instance.setStatus(null);
+		//instance.setStatus(null);
 		
 		instance.toByteArray();
 	}
 	
-	@Test
-	public void fromByteArrayTest() throws IOException {
-		instance.setTableId(tableId);
-		instance.setBlockSize(blockSize);
-		instance.setHeaderSize(headerSize);
-		instance.setNextFreeBlockId(nextFreeBlockId);
-		instance.setStatus(tableStatus);
-		byte[] bytes = instance.toByteArray();
-		
-		instance.fromByteArray(bytes);
-		
-		assertEquals(tableId, instance.getTableId());
-		assertEquals(blockSize, instance.getBlockSize());
-		assertEquals(headerSize, instance.getHeaderSize());
-		assertEquals(nextFreeBlockId, instance.getNextFreeBlockId());
-		assertEquals(tableStatus, instance.getStatus());
-	}
+	//-------------
+	// FROM BYTE ARRAY
+	//-------------
 	
 	@Test(expected = NullPointerException.class)
 	public void fromByteArrayMustThrowNullPointerExceptionOnNullByteArray() throws IOException {
@@ -271,17 +445,18 @@ public abstract class ITableHeaderBlockContentTest {
 	
 	@Test
 	public void fromByteArrayMustNotThrowIllegalArgumentExceptionOnByteArrayWithExactBytesSize() throws IOException {
-		byte[] bytes = new byte[ITableHeaderBlockContent.BYTES_SIZE];
+		instance.fromByteArray(propertiesBytes);
+	}
+	
+	@Test
+	public void fromByteArrayTest() throws IOException {
+		instance.fromByteArray(propertiesBytes);
 		
-		IThreeByteValue blockSize = new BigEndianThreeBytesValue(75);
-		byte[] valueBinary = blockSize.getValueBinary();
-		bytes[1] = valueBinary[0];
-		bytes[2] = valueBinary[1];
-		bytes[3] = valueBinary[2];
-		
-		bytes[4] = TableStatus.VALID.getValue();
-		
-		instance.fromByteArray(bytes);
+		assertEquals(tableId, instance.getTableId());
+		assertEquals(blockSize, instance.getBlockSize());
+		assertEquals(headerSize, instance.getHeaderSize());
+		assertEquals(nextFreeBlockId, instance.getNextFreeBlockId());
+		assertEquals(tableStatus, instance.getStatus());
 	}
 	
 }

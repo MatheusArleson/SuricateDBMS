@@ -3,6 +3,7 @@ package br.com.xavier.suricate.dbms.impl.low;
 import java.nio.ByteOrder;
 
 import br.com.xavier.suricate.dbms.abstractions.low.AbstractThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
 public class BigEndianThreeBytesValue 
 		extends AbstractThreeByteValue {
@@ -25,6 +26,11 @@ public class BigEndianThreeBytesValue
 		BigEndianThreeBytesValue tbv = new BigEndianThreeBytesValue();
 		tbv.setValue(511);
 		System.out.println(tbv.getValue());
+	}
+
+	@Override
+	public IThreeByteValue clone() {
+		return new BigEndianThreeBytesValue(getValueBinary());
 	}
 
 }

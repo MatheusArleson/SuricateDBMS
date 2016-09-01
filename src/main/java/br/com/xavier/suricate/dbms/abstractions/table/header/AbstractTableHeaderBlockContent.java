@@ -29,18 +29,24 @@ public abstract class AbstractTableHeaderBlockContent
 		Short headerSize,
 		Integer nextFreeBlockId, 
 		TableStatus tableStatus
-	) {
+	) throws IllegalArgumentException {
 		super();
-		this.tableId = tableId;
-		this.headerSize = headerSize;
-		this.nextFreeBlockId = nextFreeBlockId;
-		this.tableStatus = tableStatus;
 		
+		setTableId(tableId);
 		setBlockSize(blockSize);
+		setHeaderSize(headerSize);
+		setNextFreeBlockId(nextFreeBlockId);
+		setStatus(tableStatus);
 	}
 	
 	public AbstractTableHeaderBlockContent(byte[] bytes) throws IOException {
-		fromByteArray(bytes);
+		try	{
+			fromByteArray(bytes);
+		} catch(IOException e){
+			throw e;
+		} catch(IllegalArgumentException e){
+			throw new IOException("Illegal value detected.", e);
+		}
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -101,48 +107,80 @@ public abstract class AbstractTableHeaderBlockContent
 		+ "]";
 	}
 	
-	@Override
-	public void setBlockSize(IThreeByteValue blockSize) {
-		if(blockSize != null && blockSize.getValue() < ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE){
-			throw new IllegalArgumentException("Block size must be greather than " + ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE + " bytes.");
-		}
-		
-		this.blockSize = blockSize;
-	}
-
 	//XXX GETTERS/SETTERS
 	@Override
 	public Byte getTableId() {
-		return tableId;
+		if(tableId == null){
+			return null;
+		}
+		
+		return new Byte(tableId);
 	}
 
 	@Override
 	public void setTableId(Byte tableId) {
+		if(tableId == null || tableId < 1){
+			throw new IllegalArgumentException("Table ID must be a positive non zero number.");
+		}
+		
 		this.tableId = tableId;
 	}
 
 	@Override
 	public IThreeByteValue getBlockSize() {
-		return blockSize;
+		if(blockSize == null){
+			return null;
+		}
+		
+		return blockSize.clone();
 	}
 
 	@Override
+	public void setBlockSize(IThreeByteValue blockSize) {
+		if(blockSize == null){
+			throw new IllegalArgumentException("Block size must be a positive non zero number.");
+		} 
+				
+		if(blockSize.getValue() < ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE){
+			throw new IllegalArgumentException("Block size must be greather than " + ITableHeaderBlockContent.MINUMUN_BLOCK_SIZE + " bytes.");
+		}
+		
+		this.blockSize = blockSize;
+	}
+	
+	@Override
 	public Short getHeaderSize() {
-		return headerSize;
+		if(headerSize == null){
+			return null;
+		}
+		
+		return new Short(headerSize);
 	}
 
 	@Override
 	public void setHeaderSize(Short headerSize) {
+		if(headerSize == null || headerSize < 1){
+			throw new IllegalArgumentException("Header size must be a positive non zero number.");
+		}
+		
 		this.headerSize = headerSize;
 	}
 
 	@Override
 	public Integer getNextFreeBlockId() {
-		return nextFreeBlockId;
+		if(nextFreeBlockId == null){
+			return null;
+		}
+		
+		return new Integer(nextFreeBlockId);
 	}
 
 	@Override
 	public void setNextFreeBlockId(Integer nextFreeBlockId) {
+		if(nextFreeBlockId == null || nextFreeBlockId < 1){
+			throw new IllegalArgumentException("Next free block ID must be a positive non zero number.");
+		}
+		
 		this.nextFreeBlockId = nextFreeBlockId;
 	}
 
@@ -153,6 +191,10 @@ public abstract class AbstractTableHeaderBlockContent
 
 	@Override
 	public void setStatus(TableStatus tableStatus) {
+		if(tableStatus == null){
+			throw new IllegalArgumentException("Table status must be not null.");
+		}
+		
 		this.tableStatus = tableStatus;
 	}
 

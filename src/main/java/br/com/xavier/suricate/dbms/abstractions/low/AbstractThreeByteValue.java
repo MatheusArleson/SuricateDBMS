@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
-public class AbstractThreeByteValue
+public abstract class AbstractThreeByteValue
 		implements IThreeByteValue {
 	
 	private static final long serialVersionUID = -3824032907485983367L;
@@ -62,6 +62,8 @@ public class AbstractThreeByteValue
 			+ ", value=" + Arrays.toString(value) 
 		+ "]";
 	}
+	
+	public abstract IThreeByteValue clone();
 
 	@Override
 	public Integer getValue() {

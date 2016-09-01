@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 
 public interface IThreeByteValue 
-		extends IBinarizable {
+		extends IBinarizable, Cloneable {
 	
 	static final Integer MAX_VALUE = 8388607;
 	
@@ -13,6 +13,8 @@ public interface IThreeByteValue
 	void setValue(Integer value);
 	byte[] getValueBinary();
 	void setValueBinary(byte[] value);
+	
+	IThreeByteValue clone();
 	
 	@Override
 	default byte[] toByteArray() {
@@ -23,5 +25,6 @@ public interface IThreeByteValue
 	default void fromByteArray(byte[] bytes) throws IOException {
 		setValueBinary(bytes);
 	}
+	
 	
 }
