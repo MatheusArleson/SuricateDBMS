@@ -112,12 +112,14 @@ public abstract class ITableHeaderBlockContentTest {
 		headerSize = null;
 		nextFreeBlockId = null;
 		tableStatus = null;
+		propertiesBytes = null;
 		
 		otherTableId = null;
 		otherBlockSize = null;
 		otherHeaderSize = null;
 		otherNextFreeBlockId = null;
 		otherTableStatus = null;
+		otherPropertiesBytes = null;
 	}
 	
 	//XXX TEST METHODS
@@ -423,29 +425,29 @@ public abstract class ITableHeaderBlockContentTest {
 	// FROM BYTE ARRAY
 	//-------------
 	
-	@Test(expected = NullPointerException.class)
-	public void fromByteArrayMustThrowNullPointerExceptionOnNullByteArray() throws IOException {
+	@Test(expected = IOException.class)
+	public void fromByteArrayMustThrowIOExceptionOnNullByteArray() throws IOException {
 		byte[] nullBytes = null;
 		
 		instance.fromByteArray(nullBytes);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void fromByteArrayMustThrowIllegalArgumentExceptionOnByteArrayWithLessThanBytesSize() throws IOException {
+	@Test(expected = IOException.class)
+	public void fromByteArrayMustThrowIOExceptionOnByteArrayWithLessThanBytesSize() throws IOException {
 		byte[] bytes = new byte[ITableHeaderBlockContent.BYTES_SIZE - 1];
 		
 		instance.fromByteArray(bytes);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void fromByteArrayMustThrowIllegalArgumentExceptionOnByteArrayWithGreatherThanBytesSize() throws IOException {
+	@Test(expected = IOException.class)
+	public void fromByteArrayMustThrowIOExceptionOnByteArrayWithGreatherThanBytesSize() throws IOException {
 		byte[] bytes = new byte[ITableHeaderBlockContent.BYTES_SIZE + 1];
 		
 		instance.fromByteArray(bytes);
 	}
 	
 	@Test
-	public void fromByteArrayMustNotThrowIllegalArgumentExceptionOnByteArrayWithExactBytesSize() throws IOException {
+	public void fromByteArrayMustNotThrowIOExceptionOnByteArrayWithExactBytesSize() throws IOException {
 		instance.fromByteArray(propertiesBytes);
 	}
 	

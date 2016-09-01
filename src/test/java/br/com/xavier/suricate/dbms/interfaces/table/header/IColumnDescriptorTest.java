@@ -1,17 +1,15 @@
 package br.com.xavier.suricate.dbms.interfaces.table.header;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 
 public abstract class IColumnDescriptorTest {
@@ -21,7 +19,14 @@ public abstract class IColumnDescriptorTest {
 	
 	//XXX TEST PROPERTIES
 	private String columnName;
-	private Short size;
+	private Short columnSize;
+	private ColumnsTypes columnType;
+	private byte[] propertiesBytes;
+	
+	private String otherColumnName;
+	private Short otherColumnSize;
+	private ColumnsTypes otherColumnType;
+	private byte[] otherPropertiesBytes;
 	
 	//XXX CONSTRUCTOR
 	public IColumnDescriptorTest() {}
@@ -34,6 +39,7 @@ public abstract class IColumnDescriptorTest {
 	public void setup() {
 		setupInstance();
 		setupProperties();
+		setupOtherProperties();
 	}
 
 	private void setupInstance() {
@@ -41,32 +47,74 @@ public abstract class IColumnDescriptorTest {
 	}
 
 	private void setupProperties() {
-		columnName = new String("c");
-		size = new Short("1");
+		columnName = new String("columnName");
+		columnSize = new Short("2");
+		columnType = ColumnsTypes.STRING;
+		
+		propertiesBytes = new byte[IColumnDescriptor.BYTES_SIZE];
+		byte[] columnNameBytes = Factory.toByteArray(columnName);
+		ByteBuffer bb = ByteBuffer.wrap(propertiesBytes);
+		bb.put(columnNameBytes);
+		bb.position(60);
+		
+		bb.putShort(columnType.getId());
+		bb.putShort(columnSize);
+	}
+	
+	private void setupOtherProperties() {
+		otherColumnName = new String("otherColumnName");
+		otherColumnSize = new Short("4");
+		otherColumnType = ColumnsTypes.INTEGER;
+		
+		otherPropertiesBytes = new byte[IColumnDescriptor.BYTES_SIZE];
+		byte[] columnNameBytes = Factory.toByteArray(otherColumnName);
+		ByteBuffer bb = ByteBuffer.wrap(otherPropertiesBytes);
+		bb.put(columnNameBytes);
+		bb.position(60);
+		
+		bb.putShort(otherColumnType.getId());
+		bb.putShort(otherColumnSize);
 	}
 
 	//XXX AFTER METHODS
 	@After
 	public void destroy() {
 		instance = null;
+		
 		columnName = null;
-		size = null;
+		columnSize = null;
+		columnType = null;
+		propertiesBytes = null;
+		
+		otherColumnName = null;
+		otherColumnSize = null;
+		otherColumnType = null;
+		otherPropertiesBytes = null;
 	}
 	
 	//XXX TEST METHODS
+	
+	//-------------
+	// NAME
+	//-------------
+	@Test(expected = IllegalArgumentException.class)
+	public void setNameMustThrowIllegalArgumentExceptionOnNullName(){
+		instance.setName(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setNameMustThrowIllegalArgumentExceptionOnEmptyName(){
+		instance.setName("");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setNameMustThrowIllegalArgumentExceptionOnEmptySpacesName(){
+		instance.setName("  ");
+	}
+	
 	@Test
-	public void getAndSetNameTest(){
-		String otherColumnName = new String("other");
-		
-		instance.setName(columnName);
-		
-		assertSame(columnName, instance.getName());
-		assertNotSame(otherColumnName, instance.getName());
-		
-		instance.setName(otherColumnName);
-		
-		assertSame(otherColumnName, instance.getName());
-		assertNotSame(columnName, instance.getName());
+	public void setNameMustNotThrowIllegalArgumentExceptionOnValidName(){
+		instance.setName("c");
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
@@ -84,7 +132,7 @@ public abstract class IColumnDescriptorTest {
 		
 		instance.setName(columnName);
 		
-		assertSame(columnName, instance.getName());
+		assertEquals(columnName, instance.getName());
 	}
 	
 	@Test
@@ -94,29 +142,48 @@ public abstract class IColumnDescriptorTest {
 		
 		instance.setName(columnName);
 		
-		assertSame(columnName, instance.getName());
+		assertEquals(columnName, instance.getName());
 	}
 	
 	@Test
-	public void getAndSetTypeTest(){
-		ColumnsTypes otherType = ColumnsTypes.STRING;
+	public void getNameReferenceMustBeAClone(){
+		instance.setName(columnName);
 		
+		assertNotSame(columnName, instance.getName());
+		assertEquals(columnName, instance.getName());
+	}
+	
+	@Test
+	public void getAndSetNameTest(){
+		instance.setName(columnName);
+		
+		assertEquals(columnName, instance.getName());
+		assertNotEquals(otherColumnName, instance.getName());
+		
+		instance.setName(otherColumnName);
+		
+		assertEquals(otherColumnName, instance.getName());
+		assertNotEquals(columnName, instance.getName());
+	}
+
+	//-------------
+	// TYPE
+	//-------------
+	@Test(expected = IllegalArgumentException.class)
+	public void setTypeMustThrowIllegalArgumentExceptionOnNullType(){
+		instance.setType(null);
+	}
+	
+	@Test
+	public void setTypeMustNotThrowIllegalArgumentExceptionOnValidType(){
 		instance.setType(ColumnsTypes.INTEGER);
-		
-		assertSame(ColumnsTypes.INTEGER, instance.getType());
-		assertNotSame(otherType, instance.getType());
-		
-		instance.setType(otherType);
-		
-		assertSame(otherType, instance.getType());
-		assertNotSame(ColumnsTypes.INTEGER, instance.getType());
-		
 	}
 	
 	@Test
 	public void setTypeForIntegerMustAlsoSetSizeToFourBytes(){
 		instance.setType(ColumnsTypes.INTEGER);
 		
+		assertSame(ColumnsTypes.INTEGER, instance.getType());
 		assertNotNull(instance.getSize());
 		assertEquals(new Short("4"), instance.getSize());
 	}
@@ -160,24 +227,45 @@ public abstract class IColumnDescriptorTest {
 	}
 	
 	@Test
-	public void getAndSetSizeTest(){
-		Short otherSize = new Short("2");
+	public void getAndSetTypeTest(){
+		instance.setType(columnType);
 		
-		instance.setSize(size);
+		assertSame(columnType, instance.getType());
+		assertNotSame(otherColumnType, instance.getType());
 		
-		assertSame(size, instance.getSize());
-		assertNotSame(otherSize, instance.getSize());
+		instance.setType(otherColumnType);
 		
-		instance.setSize(otherSize);
-		
-		assertSame(otherSize, instance.getSize());
-		assertNotSame(size, instance.getSize());
+		assertSame(otherColumnType, instance.getType());
+		assertNotSame(columnType, instance.getType());
+	}
+	
+	//-------------
+	// SIZE
+	//-------------
+	@Test(expected = IllegalArgumentException.class)
+	public void setSizeMustThrowIllegalArgumentExceptionOnNullSize(){
+		instance.setSize(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setSizeMustThrowIllegalArgumentExceptionOnNegativeSize(){
+		instance.setSize(Short.MIN_VALUE);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void setSizeMustThrowIllegalArgumentExceptionOnZeroSize(){
+		instance.setSize(new Short("0"));
 	}
 	
 	@Test
-	public void setSizeToIntegerTypeMustNotChangeIt(){
+	public void setSizeMustNotThrowIllegalArgumentExceptionOnValidSize(){
+		instance.setSize(columnSize);
+	}
+	
+	@Test
+	public void setSizeOnIntegerTypeMustNotChangeIt(){
 		instance.setType(ColumnsTypes.INTEGER);
-		instance.setSize(size);
+		instance.setSize(columnSize);
 		
 		assertNotNull(instance.getSize());
 		assertEquals(new Short("4"), instance.getSize());
@@ -200,60 +288,37 @@ public abstract class IColumnDescriptorTest {
 		instance.setSize(size);
 		
 		assertNotNull(instance.getSize());
-		assertSame(size, instance.getSize());
+		assertEquals(size, instance.getSize());
 		
 		Short otherSize = new Short("2");
 			
 		instance.setSize(otherSize);
 		
 		assertNotNull(instance.getSize());
-		assertSame(otherSize, instance.getSize());
+		assertEquals(otherSize, instance.getSize());
 	}
-	
+		
 	@Test
-	public void setSizeToNullTypeMustChangeIt(){
-		assertNull(instance.getType());
+	public void getAndSetSizeTest(){
+		instance.setSize(columnSize);
 		
-		Short size = new Short("1");
-		instance.setSize(size);
+		assertEquals(columnSize, instance.getSize());
+		assertNotEquals(otherColumnSize, instance.getSize());
 		
-		assertNotNull(instance.getSize());
-		assertSame(size, instance.getSize());
+		instance.setSize(otherColumnSize);
 		
-		Short otherSize = new Short("2");
-			
-		instance.setSize(otherSize);
-		
-		assertNotNull(instance.getSize());
-		assertSame(otherSize, instance.getSize());
+		assertEquals(otherColumnSize, instance.getSize());
+		assertNotEquals(columnSize, instance.getSize());
 	}
 	
-	@Test
-	public void toByteArrayTest() throws IOException {
-		instance.setName(columnName);
-		instance.setType(ColumnsTypes.STRING);
-		instance.setSize(size);
-		
-		byte[] bytes = instance.toByteArray();
-		
-		assertNotNull(bytes);
-		assertEquals(IColumnDescriptor.BYTES_SIZE, bytes.length);
-	}
-	
+	//-------------
+	// TO BYTE ARRAY
+	//-------------
 	@Test(expected = IOException.class)
 	public void toByteArrayMustThrowIOExceptionOnNullColumnName() throws IOException {
-		instance.setName(null);
-		instance.setSize(size);
-		instance.setType(ColumnsTypes.STRING);
-		
-		instance.toByteArray();
-	}
-	
-	@Test(expected = IOException.class)
-	public void toByteArrayMustThrowIOExceptionOnNullColumnSize() throws IOException {
-		instance.setName(columnName);
-		instance.setSize(null);
-		instance.setType(ColumnsTypes.STRING);
+		//instance.setName(null);
+		instance.setType(columnType);
+		instance.setSize(columnSize);
 		
 		instance.toByteArray();
 	}
@@ -261,58 +326,82 @@ public abstract class IColumnDescriptorTest {
 	@Test(expected = IOException.class)
 	public void toByteArrayMustThrowIOExceptionOnNullColumnType() throws IOException {
 		instance.setName(columnName);
-		instance.setSize(size);
-		instance.setType(null);
+		//instance.setType(null);
+		instance.setSize(columnSize);
+		
+		instance.toByteArray();
+	}
+	
+	@Test(expected = IOException.class)
+	public void toByteArrayMustThrowIOExceptionOnNullColumnSize() throws IOException {
+		instance.setName(columnName);
+		instance.setType(columnType);
+		//instance.setSize(null);
 		
 		instance.toByteArray();
 	}
 	
 	@Test
-	public void fromByteArrayTest() throws IOException {
+	public void toByteArrayTest() throws IOException {
 		instance.setName(columnName);
-		instance.setType(ColumnsTypes.STRING);
-		instance.setSize(size);
+		instance.setType(columnType);
+		instance.setSize(columnSize);
+		
 		byte[] bytes = instance.toByteArray();
 		
-		instance = getInstance();
-		instance.fromByteArray(bytes);
-		
-		assertEquals(columnName, instance.getName());
-		assertEquals(ColumnsTypes.STRING, instance.getType());
-		assertEquals(size, instance.getSize());
+		assertNotNull(bytes);
+		assertEquals(IColumnDescriptor.BYTES_SIZE, bytes.length);
+		assertArrayEquals(propertiesBytes, bytes);
 	}
 	
-	@Test(expected = NullPointerException.class)
-	public void fromByteArrayMustThrowNullPointerExceptionOnNullByteArray() throws IOException {
+	//-------------
+	// FROM BYTE ARRAY
+	//-------------
+	@Test(expected = IOException.class)
+	public void fromByteArrayMustThrowIOExceptionOnNullByteArray() throws IOException {
 		byte[] nullBytes = null;
 		
 		instance.fromByteArray(nullBytes);
 	}
 	
-	@Test(expected = IllegalArgumentException.class)
-	public void fromByteArrayMustThrowIllegalArgumentExceptionOnByteArrayWithLessThanBytesSize() throws IOException {
+	@Test(expected = IOException.class)
+	public void fromByteArrayMustThrowIOExceptionOnByteArrayWithLessThanBytesSize() throws IOException {
 		byte[] bytes = new byte[IColumnDescriptor.BYTES_SIZE - 1];
 		
 		instance.fromByteArray(bytes);
 	}
 	
-	@Test
-	public void fromByteArrayMustNotThrowIllegalArgumentExceptionOnByteArrayWithGreatherThanBytesSize() {
+	@Test(expected = IOException.class)
+	public void fromByteArrayMustThrowIOExceptionOnByteArrayWithGreatherThanBytesSize() throws IOException {
 		byte[] bytes = new byte[IColumnDescriptor.BYTES_SIZE + 1];
 		
-		try {
-			instance.fromByteArray(bytes);
-		} catch (IOException e) {
-		}
+		instance.fromByteArray(bytes);
 	}
 	
 	@Test
-	public void fromByteArrayMustNotThrowIllegalArgumentExceptionOnByteArrayWithExactBytesSize() {
-		byte[] bytes = new byte[IColumnDescriptor.BYTES_SIZE];
-		
-		try {
-			instance.fromByteArray(bytes);
-		} catch (IOException e) {
-		}
+	public void fromByteArrayMustNotThrowIOExceptionOnByteArrayWithExactBytesSize() throws IOException {
+		instance.fromByteArray(propertiesBytes);
 	}
+
+	@Test
+	public void fromByteArrayMustRestoreEqualProperties() throws IOException {
+		instance.fromByteArray(propertiesBytes);
+		
+		assertEquals(columnName, instance.getName());
+		assertEquals(columnSize, instance.getSize());
+		assertEquals(columnType, instance.getType());
+	}
+	
+	@Test
+	public void fromByteArrayMustProduceEqualInstance() throws IOException{
+		IColumnDescriptor otherInstance = getInstance();
+		otherInstance.setName(columnName);
+		otherInstance.setType(columnType);
+		otherInstance.setSize(columnSize);
+		
+		instance.fromByteArray(propertiesBytes);
+		
+		assertEquals(instance, otherInstance);
+	}
+	
 }

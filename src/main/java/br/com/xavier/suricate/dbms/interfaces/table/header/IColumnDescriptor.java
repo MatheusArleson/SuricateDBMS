@@ -2,7 +2,6 @@ package br.com.xavier.suricate.dbms.interfaces.table.header;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
@@ -49,35 +48,43 @@ public interface IColumnDescriptor
 	
 	@Override
 	default void fromByteArray(byte[] bytes) throws IOException {
-		Objects.requireNonNull(bytes, "bytes cannot be null");
-		
-		if(bytes.length < BYTES_SIZE){
-			throw new IllegalArgumentException("bytes length must be of size : " + BYTES_SIZE);
+		try {
+			if(bytes == null){
+				throw new IOException("bytes cannot be null");
+			}
+			
+			if(bytes.length != BYTES_SIZE){
+				throw new IOException("bytes length must be of size : " + BYTES_SIZE);
+			}
+			
+			ByteBuffer bb = ByteBuffer.wrap(bytes);
+			
+			byte[] nameBuffer = new byte[60];
+			bb.get(nameBuffer);
+			String name = Factory.fromByteArray(nameBuffer);
+			
+			if(StringUtils.isNullOrEmpty(name)){
+				throw new IOException("Null name for column descriptor");
+			} else {
+				setName(name.trim());
+			}
+			
+			bb.position(60);
+			
+			Short columnTypeId = bb.getShort();
+			ColumnsTypes type = ColumnsTypes.getById(columnTypeId);
+			if(type == null){
+				throw new IOException("Unknown column type for id : " + columnTypeId);
+			} else {
+				setType(type);
+			}
+			
+			Short size = bb.getShort();
+			setSize(size);
+		} catch(IOException e){
+			throw e;
+		} catch(Exception e){
+			throw new IOException("Error while parsing bytes.", e);
 		}
-		
-		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		
-		byte[] nameBuffer = new byte[60];
-		bb.get(nameBuffer);
-		String name = Factory.fromByteArray(nameBuffer);
-		
-		if(StringUtils.isNullOrEmpty(name)){
-			throw new IOException("Null name for column descriptor");
-		} else {
-			setName(name.trim());
-		}
-		
-		bb.position(60);
-		
-		Short columnTypeId = bb.getShort();
-		ColumnsTypes type = ColumnsTypes.getById(columnTypeId);
-		if(type == null){
-			throw new IOException("Unknown column type for id : " + columnTypeId);
-		} else {
-			setType(type);
-		}
-		
-		Short size = bb.getShort();
-		setSize(size);
 	}
 }

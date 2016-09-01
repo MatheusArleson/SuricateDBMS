@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
+import br.com.xavier.util.StringUtils;
 
 public abstract class AbstractColumnDescriptor 
 		implements IColumnDescriptor {
@@ -22,10 +23,9 @@ public abstract class AbstractColumnDescriptor
 	
 	public AbstractColumnDescriptor(String name, ColumnsTypes type, Short size) {
 		super();
-		this.type = type;
-		this.size = size;
-		
 		setName(name);
+		setType(type);
+		setSize(size);
 	}
 	
 	public AbstractColumnDescriptor(byte[] bytes) throws IOException {
@@ -77,35 +77,68 @@ public abstract class AbstractColumnDescriptor
 		+ "]";
 	}
 
+	//XXX GETTERS/SETTERS
+	@Override
+	public String getName() {
+		if(name == null){
+			return null;
+		}
+		
+		return new String(name);
+	}
+	
 	@Override
 	public void setName(String name) {
-		if(name != null && name.length() > IColumnDescriptor.MAX_COLUMN_NAME_LENGTH){
+		if(StringUtils.isNullOrEmpty(name)){
+			throw new IllegalArgumentException("Column name must be a not empty string.");
+		}
+		
+		if(name.length() > IColumnDescriptor.MAX_COLUMN_NAME_LENGTH){
 			throw new IllegalArgumentException("Maximum length for column name is " + IColumnDescriptor.MAX_COLUMN_NAME_LENGTH + " characters.");
 		}
 		
-		this.name = name;
+		this.name = name.trim();
+	}
+
+	@Override
+	public ColumnsTypes getType() {
+		return type;
 	}
 	
 	@Override
 	public void setType(ColumnsTypes type) {
-		this.type = type;
-		
-		if(type != null){
-			switch (type) {
-			case INTEGER:
-				setSize(new Short("4"));
-				return;
-			
-			case STRING:
-			default:
-				setSize(null);
-				return;
-			}
+		if(type == null){
+			throw new IllegalArgumentException("Column type must be not null.");
 		}
+		
+		this.type = type;
+		switch (type) {
+		case INTEGER:
+			this.size = new Short("4");
+			return;
+		
+		case STRING:
+		default:
+			this.size = null;
+			return;
+		}
+	}
+
+	@Override
+	public Short getSize() {
+		if(size == null){
+			return null;
+		}
+		
+		return new Short(size);
 	}
 	
 	@Override
 	public void setSize(Short size) {
+		if(size == null || size < 1){
+			throw new IllegalArgumentException("Size must be a positive number.");
+		}
+		
 		if(type == null){
 			this.size = size;
 			return;
@@ -121,24 +154,6 @@ public abstract class AbstractColumnDescriptor
 			this.size = size;
 			return;
 		}
-		
-		
-	}
-	
-	//XXX GETTERS/SETTERS
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public ColumnsTypes getType() {
-		return type;
-	}
-
-	@Override
-	public Short getSize() {
-		return size;
 	}
 
 }
