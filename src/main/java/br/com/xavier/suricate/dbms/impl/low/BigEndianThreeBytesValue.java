@@ -2,6 +2,8 @@ package br.com.xavier.suricate.dbms.impl.low;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.BitSet;
 
 import br.com.xavier.suricate.dbms.abstractions.low.AbstractThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
@@ -49,9 +51,26 @@ public class BigEndianThreeBytesValue
 //	    System.out.println(int2);
 //		System.out.println(int2 == -1);
 		
-		IThreeByteValue tbv3 = new BigEndianThreeBytesValue(-1);
-		Integer value = tbv3.getValue();
-		System.out.println(value);
+//		IThreeByteValue tbv3 = new BigEndianThreeBytesValue(-1);
+//		Integer value3 = tbv3.getValue();
+//		System.out.println(value3);
+		
+		BitSet bs = new BitSet(24);
+		bs.flip(0, 24);
+		byte[] bytes = bs.toByteArray();
+		
+		System.out.println("#> BYTES NATURAL > " + Arrays.toString(bytes));
+		
+//		byte[] bytesLE = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).put(bytes).array();
+//		System.out.println("#> BYTES LE > " + Arrays.toString(bytesLE));
+//		
+//		byte[] bytesBE = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).put(bytes).array();
+//		System.out.println("#> BYTES BE > " + Arrays.toString(bytesBE));
+		
+		
+		IThreeByteValue tbv4 = new BigEndianThreeBytesValue(bytes);
+		Integer value4 = tbv4.getValue();
+		System.out.println(value4);
 		
 		
 //		BigEndianThreeBytesValue tbv = new BigEndianThreeBytesValue();

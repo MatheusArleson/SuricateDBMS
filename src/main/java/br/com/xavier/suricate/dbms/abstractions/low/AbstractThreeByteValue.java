@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.abstractions.low;
 
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
@@ -73,25 +74,43 @@ public abstract class AbstractThreeByteValue
 		}
 		
 		Integer number = null;
-		if(byteEndianess.equals(ByteOrder.BIG_ENDIAN)){
-			number = getValueBigEndian();
+		
+		if(isBigEndian()){
+			number = getValueBigEndian(value);
 		} else {
-			number = getValueLittleEndian();
+			number = getValueLittleEndian(value);
 		}
 		
 		if(negative){
-			number = number | (FULL_BYTE << 24);
+			if(isBigEndian()){
+				number = number | (FULL_BYTE << 24);
+			} else {
+				number = number | (FULL_BYTE >> 24);
+			}
 		}
 		
 		return number;
 	}
 
-	private Integer getValueLittleEndian() {
+	private Integer getValueLittleEndian(byte[] value) {
 		return (value[0] & FULL_BYTE) | ((value[1] & FULL_BYTE) << 8) | ((value[2] & FULL_BYTE) << 16);
 	}
 
-	private Integer getValueBigEndian() {
+	private Integer getValueBigEndian(byte[] value) {
 		return (value[2] & FULL_BYTE) | ((value[1] & FULL_BYTE) << 8) | ((value[0] & FULL_BYTE) << 16);
+	}
+	
+	@Override
+	public void setValueBinary(byte[] value) {
+		Integer valueInt = null;
+		
+		if(isBigEndian()){
+			valueInt = getValueBigEndian(value);
+		} else {
+			valueInt = getValueLittleEndian(value);
+		}
+		
+		setValue(valueInt);
 	}
 
 	@Override
@@ -115,7 +134,7 @@ public abstract class AbstractThreeByteValue
 			this.value = new byte[3];
 		}
 		
-		if(byteEndianess.equals(ByteOrder.BIG_ENDIAN)){
+		if(isBigEndian()){
 			setValueBigEndian(value);
 		} else {
 			setValueLittleEndian(value);
@@ -135,9 +154,8 @@ public abstract class AbstractThreeByteValue
 		this.value[2] = (byte) ((value >> 16) & FULL_BYTE);
 	}
 	
-	@Override
-	public void setValueBinary(byte[] value) {
-		this.value = value;
+	private boolean isBigEndian(){
+		return byteEndianess.equals(ByteOrder.BIG_ENDIAN);
 	}
 
 	//XXX GETTERS/SETTERS
