@@ -361,10 +361,11 @@ public abstract class ITableHeaderBlockContentTest {
 		
 		assertNotNull(bytes);
 		assertEquals(ITableHeaderBlockContent.BYTES_SIZE, bytes.length);
+		assertArrayEquals(propertiesBytes, bytes);
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullTableId() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullTableId() throws IOException {
 		//instance.setTableId(null);
 		instance.setBlockSize(blockSize);
 		instance.setHeaderSize(headerSize);
@@ -375,7 +376,7 @@ public abstract class ITableHeaderBlockContentTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullBlockSize() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullBlockSize() throws IOException {
 		instance.setTableId(tableId);
 		//instance.setBlockSize(null);
 		instance.setHeaderSize(headerSize);
@@ -386,7 +387,7 @@ public abstract class ITableHeaderBlockContentTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullHeaderSize() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullHeaderSize() throws IOException {
 		instance.setTableId(tableId);
 		instance.setBlockSize(blockSize);
 		//instance.setHeaderSize(null);
@@ -397,7 +398,7 @@ public abstract class ITableHeaderBlockContentTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullNextFreeBlockId() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullNextFreeBlockId() throws IOException {
 		instance.setTableId(tableId);
 		instance.setBlockSize(blockSize);
 		instance.setHeaderSize(headerSize);
@@ -408,7 +409,7 @@ public abstract class ITableHeaderBlockContentTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void mustThrowIOExceptionOnNullTableStatus() throws IOException {
+	public void toByteArrayMustThrowIOExceptionOnNullTableStatus() throws IOException {
 		instance.setTableId(tableId);
 		instance.setBlockSize(blockSize);
 		instance.setHeaderSize(headerSize);
@@ -449,7 +450,7 @@ public abstract class ITableHeaderBlockContentTest {
 	}
 	
 	@Test
-	public void fromByteArrayTest() throws IOException {
+	public void fromByteArrayMustRestoreEqualProperties() throws IOException {
 		instance.fromByteArray(propertiesBytes);
 		
 		assertEquals(tableId, instance.getTableId());
@@ -457,6 +458,20 @@ public abstract class ITableHeaderBlockContentTest {
 		assertEquals(headerSize, instance.getHeaderSize());
 		assertEquals(nextFreeBlockId, instance.getNextFreeBlockId());
 		assertEquals(tableStatus, instance.getStatus());
+	}
+	
+	@Test
+	public void fromByteArrayMustProduceEqualInstance() throws IOException{
+		ITableHeaderBlockContent otherInstance = getInstance();
+		otherInstance.setTableId(tableId);
+		otherInstance.setBlockSize(blockSize);
+		otherInstance.setHeaderSize(headerSize);
+		otherInstance.setNextFreeBlockId(nextFreeBlockId);
+		otherInstance.setStatus(tableStatus);
+		
+		instance.fromByteArray(propertiesBytes);
+		
+		assertEquals(instance, otherInstance);
 	}
 	
 }
