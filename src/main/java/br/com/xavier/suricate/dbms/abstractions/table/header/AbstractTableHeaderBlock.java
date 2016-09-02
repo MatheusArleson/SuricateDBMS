@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.impl.table.header.ColumnDescriptor;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;

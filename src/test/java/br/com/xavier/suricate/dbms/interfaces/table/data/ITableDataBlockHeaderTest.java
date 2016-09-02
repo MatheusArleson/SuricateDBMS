@@ -367,7 +367,7 @@ public abstract class ITableDataBlockHeaderTest {
 	}
 
 	@Test
-	public void fromByteArrayTest() throws IOException {
+	public void fromByteArrayMustProduceEqualInstance() throws IOException{
 		ITableDataBlockHeader otherInstance = getInstance();
 		otherInstance.setTableId(tableId);
 		otherInstance.setBlockId(blockId);

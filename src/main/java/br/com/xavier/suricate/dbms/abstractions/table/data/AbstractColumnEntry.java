@@ -21,8 +21,7 @@ public class AbstractColumnEntry
 	
 	public AbstractColumnEntry(Short contentSize, byte[] content) {
 		super();
-		this.contentSize = contentSize;
-		this.content = content;
+		setContent(content);
 	}
 	
 	public AbstractColumnEntry(byte[] bytes) throws IOException {
@@ -64,31 +63,42 @@ public class AbstractColumnEntry
 			+ "contentSize=" + contentSize 
 		+ "]";
 	}
+
+	//XXX GETTERS/SETTERS
+	@Override
+	public byte[] getContent() {
+		if(content == null){
+			return null;
+		}
+		
+		return Arrays.copyOf(content, content.length);
+	}
 	
 	@Override
 	public void setContent(byte[] content) {
 		if(content == null){
-			throw new NullPointerException("Content must not be null.");
+			throw new IllegalArgumentException("Content must not be null.");
 		}
 		
 		Integer contentLength = content.length;
-		if(contentLength > Short.MAX_VALUE){
-			throw new IllegalArgumentException("Maximum size for content is : " + Short.MAX_VALUE);
+		if(contentLength < IColumnEntry.CONTENT_MIN_LENGTH){
+			throw new IllegalArgumentException("Minimum size for content is : " + IColumnEntry.CONTENT_MIN_LENGTH);
+		}
+		
+		if(contentLength > IColumnEntry.CONTENT_MAX_LENGTH){
+			throw new IllegalArgumentException("Maximum size for content is : " + IColumnEntry.CONTENT_MAX_LENGTH);
 		}
 		
 		this.content = content;
 		this.contentSize = contentLength.shortValue();
 	}
-
-	//XXX GETTERS/SETTERS
+	
 	@Override
 	public Short getContentSize() {
-		return contentSize;
+		if(contentSize == null){
+			return null;
+		}
+		
+		return new Short(contentSize);
 	}
-
-	@Override
-	public byte[] getContent() {
-		return content;
-	}
-
 }

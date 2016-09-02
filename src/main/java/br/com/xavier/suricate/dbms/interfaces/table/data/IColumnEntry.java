@@ -2,13 +2,15 @@ package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 import br.com.xavier.util.ObjectsUtils;
 
 public interface IColumnEntry
 		extends IBinarizable {
+	
+	public static final Short CONTENT_MIN_LENGTH = 4;
+	public static final Short CONTENT_MAX_LENGTH = Short.MAX_VALUE;  
 	
 	Short getContentSize();
 	byte[] getContent();
@@ -35,14 +37,24 @@ public interface IColumnEntry
 	
 	@Override
 	default void fromByteArray(byte[] bytes) throws IOException {
-		Objects.requireNonNull(bytes, "bytes cannot be null");
-		
-		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		Short contentSize = bb.getShort();
-		
-		byte[] contentBuffer = new byte[contentSize];
-		bb.get(contentBuffer);
-		setContent(contentBuffer);
+		try{
+			if(bytes == null){
+				throw new IOException("bytes cannot be null");
+			}
+			
+			ByteBuffer bb = ByteBuffer.wrap(bytes);
+			Short contentSize = bb.getShort();
+			
+			byte[] contentBuffer = new byte[contentSize];
+			bb.get(contentBuffer);
+			
+			setContent(contentBuffer);
+			
+		} catch (IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IOException("Error while parsing the bytes.", e);
+		}
 	}
 
 }
