@@ -1,6 +1,5 @@
 package br.com.xavier.suricate.dbms.abstractions.low;
 
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
@@ -11,12 +10,11 @@ public abstract class AbstractThreeByteValue
 	
 	private static final long serialVersionUID = -3824032907485983367L;
 	
-	//XXX PROPERTIES
+	//XXX CONSTANTS
 	private static final int FULL_BYTE = 0xFF;
 	
+	//XXX PROPERTIES
 	private final ByteOrder byteEndianess;
-	
-	private boolean negative;
 	private byte[] value;
 	
 	//XXX CONSTRUCTOR
@@ -81,14 +79,6 @@ public abstract class AbstractThreeByteValue
 			number = getValueLittleEndian(value);
 		}
 		
-		if(negative){
-			if(isBigEndian()){
-				number = number | (FULL_BYTE << 24);
-			} else {
-				number = number | (FULL_BYTE >> 24);
-			}
-		}
-		
 		return number;
 	}
 
@@ -128,8 +118,6 @@ public abstract class AbstractThreeByteValue
 			throw new IllegalArgumentException("Number is greather than the maximum value of " + MAX_VALUE);
 		}
 		
-		negative = value < 0;
-		
 		if(this.value == null){
 			this.value = new byte[3];
 		}
@@ -154,7 +142,7 @@ public abstract class AbstractThreeByteValue
 		this.value[2] = (byte) ((value >> 16) & FULL_BYTE);
 	}
 	
-	private boolean isBigEndian(){
+	public boolean isBigEndian(){
 		return byteEndianess.equals(ByteOrder.BIG_ENDIAN);
 	}
 

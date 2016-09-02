@@ -7,9 +7,11 @@ public interface IThreeByteValue
 		extends IBinarizable, Cloneable {
 	
 	static final Integer MAX_VALUE = 8388607;
-	static final Integer MIN_VALUE = -8388607;
+	//TODO FIXME not working with negative numbers but it's not a requirement right now.
+	static final Integer MIN_VALUE = 0;
 	
 	ByteOrder getByteEndianness();
+	boolean isBigEndian();
 	Integer getValue();
 	void setValue(Integer value);
 	byte[] getValueBinary();

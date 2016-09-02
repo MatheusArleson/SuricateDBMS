@@ -19,17 +19,22 @@ import org.junit.Test;
 public abstract class IThreeBytesValueTest {
 	
 	//XXX TEST SUBJECT
-	protected IThreeByteValue instance;
+	private IThreeByteValue instance;
 	
 	//XXX TEST PROPERTIES
-	protected Integer maxValue;
-	protected Integer number;
-	protected byte[] numberBinarySameEndianness;
+	private final Integer maxValue;
+	private final Integer minValue;
+	private Integer number;
+	private byte[] numberBinarySameEndianness;
 	
 	//XXX CONSTRUCTOR
-	public IThreeBytesValueTest() {	}
+	public IThreeBytesValueTest() {	
+		this.maxValue = IThreeByteValue.MAX_VALUE;
+		this.minValue = IThreeByteValue.MIN_VALUE;
+	}
 	
 	public IThreeBytesValueTest(Integer number) {
+		this();
 		this.number = number;
 	}
 	
@@ -43,7 +48,8 @@ public abstract class IThreeBytesValueTest {
 		if(number == null){
 			number = 511;
 		}
-		maxValue = IThreeByteValue.MAX_VALUE;
+		
+		
 		numberBinarySameEndianness = generateSameEndiannessByteArray(instance, number);
 	}
 
@@ -129,6 +135,28 @@ public abstract class IThreeBytesValueTest {
 		instance.setValue(maxValue);
 		
 		assertEquals(maxValue, instance.getValue());
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void mustThrowIllegalArgumentExceptionIfValueIsLessThanMinValue(){
+		instance.setValue(minValue - 1);
+	}
+	
+	@Test
+	public void mustNotThrowIllegalArgumentExceptionIfValueIsEqualThanMinValue(){
+		instance.setValue(minValue);
+	}
+	
+	@Test
+	public void mustNotThrowIllegalArgumentExceptionIfValueIsGreatherThanMinValue(){
+		instance.setValue(minValue + 1);
+	}
+	
+	@Test
+	public void mustWorkWithMinValue(){
+		instance.setValue(minValue);
+		
+		assertEquals(minValue, instance.getValue());
 	}
 	
 	// ------------------------------------------

@@ -1,16 +1,15 @@
 package br.com.xavier.suricate.dbms.interfaces.table.header;
 
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,6 +20,7 @@ import br.com.xavier.suricate.dbms.enums.TableStatus;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.table.header.ColumnDescriptor;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
+import br.com.xavier.util.ByteArrayUtils;
 
 public abstract class ITableHeaderBlockTest {
 	
@@ -30,6 +30,7 @@ public abstract class ITableHeaderBlockTest {
 	//XXX TEST PROPERTIES
 	private ITableHeaderBlockContent headerContent;
 	private Collection<IColumnDescriptor> columnsDescriptors;
+	private byte[] propertiesBytes;
 	
 	private ITableHeaderBlockContent otherHeaderContent;
 	private Collection<IColumnDescriptor> otherColumnsDescriptors;
@@ -42,7 +43,7 @@ public abstract class ITableHeaderBlockTest {
 
 	//XXX BEFORE METHODS
 	@Before
-	public void setup() {
+	public void setup() throws IOException {
 		setupInstance();
 		setupProperties();
 	}
@@ -51,17 +52,17 @@ public abstract class ITableHeaderBlockTest {
 		instance = getInstance();
 	}
 
-	private void setupProperties() {
+	private void setupProperties() throws IOException {
 		generateProperties();
 		generateOtherProperties();
 	}
 
-	private void generateProperties() {
+	private void generateProperties() throws IOException {
 		headerContent = new TableHeaderBlockContent();
-		headerContent.setTableId(Byte.MIN_VALUE);
+		headerContent.setTableId(new Byte("1"));
 		headerContent.setBlockSize(new BigEndianThreeBytesValue(4096));
 		headerContent.setStatus(TableStatus.VALID);
-		headerContent.setNextFreeBlockId(0);
+		headerContent.setNextFreeBlockId(2);
 		
 		columnsDescriptors = new ArrayList<>();
 		
@@ -77,10 +78,14 @@ public abstract class ITableHeaderBlockTest {
 		columnsDescriptors.add(colDesc1);
 		columnsDescriptors.add(colDesc2);
 		
-		int columnsDescriptorsSize = columnsDescriptors.size() * 64;
+		int columnsDescriptorsSize = columnsDescriptors.size() * IColumnDescriptor.BYTES_SIZE;
 		Short headerSize = new Integer(ITableHeaderBlockContent.BYTES_SIZE + columnsDescriptorsSize).shortValue();
 		
 		headerContent.setHeaderSize(headerSize);
+		
+		byte[] headerContentBytes = headerContent.toByteArray();
+		byte[] columnsDescriptorsBytes = ByteArrayUtils.toByteArray(columnsDescriptors);
+		propertiesBytes = ByteArrayUtils.toByteArray(headerContentBytes, columnsDescriptorsBytes);
 	}
 
 	private void generateOtherProperties() {
@@ -104,7 +109,7 @@ public abstract class ITableHeaderBlockTest {
 		otherColumnsDescriptors.add(colDesc1);
 		otherColumnsDescriptors.add(colDesc2);
 		
-		int columnsDescriptorsSize = otherColumnsDescriptors.size() * 64;
+		int columnsDescriptorsSize = otherColumnsDescriptors.size() * IColumnDescriptor.BYTES_SIZE;
 		Short headerSize = new Integer(ITableHeaderBlockContent.BYTES_SIZE + columnsDescriptorsSize).shortValue();
 		
 		otherHeaderContent.setHeaderSize(headerSize);
@@ -119,6 +124,10 @@ public abstract class ITableHeaderBlockTest {
 	}
 	
 	//XXX TEST METHODS
+	
+	//-------------
+	// HEADER CONTENT
+	//-------------
 	@Test
 	public void getAndSetHeaderContentTest(){
 		instance.setHeaderContent(headerContent);
@@ -132,39 +141,29 @@ public abstract class ITableHeaderBlockTest {
 		assertNotSame(headerContent, instance.getHeaderContent());
 	}
 	
-	@Test(expected = NullPointerException.class)
-	public void setHeaderContentMustThrowNullPointerExceptionOnNullValue(){
-		
+	@Test(expected = IllegalArgumentException.class)
+	public void setHeaderContentMustThrowIllegalArgumentExceptionOnNullValue(){
 		instance.setHeaderContent(null);
-		
 	}
 	
 	@Test
-	public void getAndSetColumnsDescriptorsTest(){
-		instance.setColumnsDescriptor(columnsDescriptors);
-		
-		assertSame(columnsDescriptors, instance.getColumnsDescriptors());
-		assertNotSame(otherColumnsDescriptors, instance.getColumnsDescriptors());
-		
-		instance.setColumnsDescriptor(otherColumnsDescriptors);
-		
-		assertSame(otherColumnsDescriptors, instance.getColumnsDescriptors());
-		assertNotSame(columnsDescriptors, instance.getColumnsDescriptors());
+	public void setHeaderContentMustNotThrowIllegalArgumentExceptionOnNonNullValue(){
+		instance.setHeaderContent(new TableHeaderBlockContent());
 	}
 	
-	@Test(expected = NullPointerException.class)
-	public void setColumnsDescriptorsMustThrowNullPointerExceptionOnNullCollection(){
-		
+	//-------------
+	// COLUMNS DESCRIPTORS
+	//-------------
+	@Test(expected = IllegalArgumentException.class)
+	public void setColumnsDescriptorsMustThrowIllegalArgumentExceptionOnNullCollection(){
 		instance.setColumnsDescriptor(null);
-		
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void setColumnsDescriptorsMustThrowIllegalArgumentExceptionOnEmptyCollection(){
-		ArrayList<IColumnDescriptor> columnsDescriptors = new ArrayList<>();
+		Collection<IColumnDescriptor> empty = Collections.emptyList();
 		
-		instance.setColumnsDescriptor(columnsDescriptors);
-		
+		instance.setColumnsDescriptor(empty);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
@@ -175,18 +174,34 @@ public abstract class ITableHeaderBlockTest {
 	}
 	
 	@Test
-	public void toByteArrayTest() throws IOException {
-		instance.setHeaderContent(headerContent);
+	public void setColumnsDescriptorsMustNotShareReferenceWithCollectionSetted(){
 		instance.setColumnsDescriptor(columnsDescriptors);
 		
-		byte[] bytes = instance.toByteArray();
+		assertNotSame(columnsDescriptors, instance.getColumnsDescriptors());
 		
-		assertNotNull(bytes);
-		assertThat(bytes.length, is(not(0)));
+		instance.setColumnsDescriptor(otherColumnsDescriptors);
+		
+		assertNotSame(otherColumnsDescriptors, instance.getColumnsDescriptors());
+		assertNotSame(columnsDescriptors, instance.getColumnsDescriptors());
 	}
 	
+	@Test
+	public void getAndSetColumnsDescriptorsTest(){
+		instance.setColumnsDescriptor(columnsDescriptors);
+		
+		assertEquals(columnsDescriptors, instance.getColumnsDescriptors());
+		
+		instance.setColumnsDescriptor(otherColumnsDescriptors);
+		
+		assertEquals(otherColumnsDescriptors, instance.getColumnsDescriptors());
+	}
+	
+	//-------------
+	// TO BYTE ARRAY
+	//-------------
 	@Test(expected = IOException.class)
 	public void toByteArrayMustThrowIOExceptionOnNullTableHeaderBlockContent() throws IOException {
+		//instance.setHeaderContent(headerContent);
 		instance.setColumnsDescriptor(columnsDescriptors);
 		
 		instance.toByteArray();
@@ -195,28 +210,49 @@ public abstract class ITableHeaderBlockTest {
 	@Test(expected = IOException.class)
 	public void toByteArrayMustThrowIOExceptionOnNullColumnsDescriptorsCollection() throws IOException {
 		instance.setHeaderContent(headerContent);
+		//instance.setColumnsDescriptor(columnsDescriptors);
 		
 		instance.toByteArray();
 	}
 	
 	@Test
-	public void fromByteArrayTest() throws IOException {
+	public void toByteArrayTest() throws IOException {
 		instance.setHeaderContent(headerContent);
 		instance.setColumnsDescriptor(columnsDescriptors);
+		
 		byte[] bytes = instance.toByteArray();
 		
-		instance = getInstance();
-		instance.fromByteArray(bytes);
-		
-		assertEquals(headerContent, instance.getHeaderContent());
-		assertEquals(columnsDescriptors, instance.getColumnsDescriptors());
+		assertNotNull(bytes);
+		assertArrayEquals(propertiesBytes, bytes);
 	}
 	
+	//-------------
+	// FROM BYTE ARRAY
+	//-------------
 	@Test(expected = NullPointerException.class)
 	public void fromByteArrayMustThrowNullPointerExceptionOnNullByteArray() throws IOException {
 		byte[] nullBytes = null;
 		
 		instance.fromByteArray(nullBytes);
+	}
+	
+	@Test
+	public void fromByteArrayMustRestoreEqualProperties() throws IOException {
+		instance.fromByteArray(propertiesBytes);
+		
+		assertEquals(headerContent, instance.getHeaderContent());
+		assertEquals(columnsDescriptors, instance.getColumnsDescriptors());
+	}
+	
+	@Test
+	public void fromByteArrayMustProduceEqualInstance() throws IOException{
+		ITableHeaderBlock otherInstance = getInstance();
+		otherInstance.setHeaderContent(headerContent);
+		otherInstance.setColumnsDescriptor(columnsDescriptors);
+		
+		instance.fromByteArray(propertiesBytes);
+		
+		assertEquals(instance, otherInstance);
 	}
 	
 }

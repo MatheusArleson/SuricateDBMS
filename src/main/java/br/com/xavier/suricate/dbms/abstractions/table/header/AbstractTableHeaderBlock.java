@@ -96,16 +96,35 @@ public abstract class AbstractTableHeaderBlock
 		+ "]";
 	}
 	
+	//XXX GETTERS/SETTERS
+	@Override
+	public ITableHeaderBlockContent getHeaderContent() {
+		return headerContent;
+	}
+	
 	@Override
 	public void setHeaderContent(ITableHeaderBlockContent headerContent) {
-		Objects.requireNonNull(headerContent, "Table header content instance must not be null");
+		if(headerContent == null){
+			throw new IllegalArgumentException("Table header content instance must not be null.");
+		}
 		
 		this.headerContent = headerContent;
+	}
+
+	@Override
+	public Collection<IColumnDescriptor> getColumnsDescriptors() {
+		if(columnsDescriptors == null){
+			return null;
+		}
+		
+		return new ArrayList<>(columnsDescriptors);
 	}
 	
 	@Override
 	public void setColumnsDescriptor(Collection<IColumnDescriptor> columnsDescriptors) {
-		Objects.requireNonNull(columnsDescriptors, "Columns descriptors collection instance must not be null");
+		if(columnsDescriptors == null){
+			throw new IllegalArgumentException("Columns descriptors collection instance must not be null.");
+		}
 		
 		if(columnsDescriptors.isEmpty()){
 			throw new IllegalArgumentException("Columns descriptors collection must not be empty.");
@@ -116,18 +135,12 @@ public abstract class AbstractTableHeaderBlock
 			throw new IllegalArgumentException("Columns descriptors collections must not have null values.");
 		}
 		
-		this.columnsDescriptors = columnsDescriptors;
-	}
-
-	//XXX GETTERS/SETTERS
-	@Override
-	public ITableHeaderBlockContent getHeaderContent() {
-		return headerContent;
-	}
-
-	@Override
-	public Collection<IColumnDescriptor> getColumnsDescriptors() {
-		return columnsDescriptors;
+		if(this.columnsDescriptors == null){
+			this.columnsDescriptors = new ArrayList<>();
+		}
+		
+		this.columnsDescriptors.clear();
+		this.columnsDescriptors.addAll(columnsDescriptors);
 	}
 
 }

@@ -10,7 +10,5 @@ public class TableHeaderBlockTest
 	protected ITableHeaderBlock getInstance() {
 		return new TableHeaderBlock();
 	}
-	
-	
 
 }
