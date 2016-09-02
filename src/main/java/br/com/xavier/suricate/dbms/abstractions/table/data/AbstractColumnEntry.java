@@ -90,7 +90,9 @@ public class AbstractColumnEntry
 		}
 		
 		this.content = content;
-		this.contentSize = contentLength.shortValue();
+		
+		Integer sizeHolderSize = Short.BYTES + contentLength;
+		this.contentSize = sizeHolderSize.shortValue();
 	}
 	
 	@Override

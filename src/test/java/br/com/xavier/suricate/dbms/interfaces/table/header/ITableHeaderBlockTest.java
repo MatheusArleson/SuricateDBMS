@@ -119,8 +119,13 @@ public abstract class ITableHeaderBlockTest {
 	@After
 	public void destroy() {
 		instance = null;
+		
 		headerContent = null;
 		columnsDescriptors = null;
+		propertiesBytes = null;
+		
+		otherHeaderContent = null;
+		otherColumnsDescriptors = null;
 	}
 	
 	//XXX TEST METHODS

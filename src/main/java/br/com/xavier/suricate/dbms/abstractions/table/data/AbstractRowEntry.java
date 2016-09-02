@@ -3,7 +3,6 @@ package br.com.xavier.suricate.dbms.abstractions.table.data;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
@@ -50,15 +49,15 @@ public class AbstractRowEntry
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractRowEntry other = (AbstractRowEntry) obj;
-		if (columnsEntries == null) {
-			if (other.columnsEntries != null)
-				return false;
-		} else if (!columnsEntries.equals(other.columnsEntries))
-			return false;
 		if (size == null) {
 			if (other.size != null)
 				return false;
 		} else if (!size.equals(other.size))
+			return false;
+		if (columnsEntries == null) {
+			if (other.columnsEntries != null)
+				return false;
+		} else if (!columnsEntries.equals(other.columnsEntries))
 			return false;
 		return true;
 	}
@@ -73,7 +72,9 @@ public class AbstractRowEntry
 	
 	@Override
 	public void setColumnsEntries(Collection<IColumnEntry> columnsEntries) {
-		Objects.requireNonNull(columnsEntries, "Columns entries collection instance must not be null");
+		if(columnsEntries == null){
+			throw new IllegalArgumentException("Columns entries collection instance must not be null.");
+		}
 		
 		if(columnsEntries.isEmpty()){
 			throw new IllegalArgumentException("Columns entries collection must not be empty.");
@@ -89,7 +90,7 @@ public class AbstractRowEntry
 	}
 
 	private void setRowEntrySize(Collection<IColumnEntry> columnsEntries) {
-		Integer entrySize = new Integer(0);
+		Integer entrySize = new Integer(4);
 		for (IColumnEntry c : columnsEntries) {
 			entrySize = entrySize + c.getContentSize(); 
 		}
@@ -99,13 +100,20 @@ public class AbstractRowEntry
 
 	//XXX GETTERS/SETTERS
 	@Override
-	public Integer getSize() {
-		return new Integer(size);
+	public Collection<IColumnEntry> getColumnsEntries() {
+		if(columnsEntries == null){
+			return null;
+		}
+		
+		return new ArrayList<>(columnsEntries);
 	}
 	
 	@Override
-	public Collection<IColumnEntry> getColumnsEntries() {
-		return new ArrayList<>(columnsEntries);
+	public Integer getSize() {
+		if(size == null){
+			return null;
+		}
+		
+		return new Integer(size);
 	}
-
 }

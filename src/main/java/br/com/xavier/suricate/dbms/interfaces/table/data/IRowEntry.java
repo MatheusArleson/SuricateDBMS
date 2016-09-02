@@ -4,14 +4,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 import br.com.xavier.suricate.dbms.impl.table.data.ColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 import br.com.xavier.util.ByteArrayUtils;
+import br.com.xavier.util.ObjectsUtils;
 
 public interface IRowEntry 
 		extends IBinarizable {
+	
+	public static final Integer ENTRY_MIN_SIZE = Integer.BYTES + Short.BYTES + 2;
 	
 	Integer getSize();
 	Collection<IColumnEntry> getColumnsEntries();
@@ -19,12 +21,20 @@ public interface IRowEntry
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
-		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(getColumnsEntries());
-		Integer size = columnsEntriesBytes.length + 4;
+		Collection<IColumnEntry> columnsEntries = getColumnsEntries();
+		Integer entrySize = getSize();
+		
+		boolean anyNull = ObjectsUtils.anyNull(entrySize, columnsEntries);
+		if(anyNull){
+			throw new IOException("To transform to byte[] all properties must not be null.");
+		}
+		
+		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(columnsEntries);
+		Integer size = columnsEntriesBytes.length + Integer.BYTES;
 		
 		ByteBuffer bb = ByteBuffer.allocate(size);
 		
-		bb.putInt(getSize());
+		bb.putInt(entrySize);
 		bb.put(columnsEntriesBytes);
 		
 		return bb.array();
@@ -32,26 +42,45 @@ public interface IRowEntry
 	
 	@Override
 	default void fromByteArray(byte[] bytes) throws IOException {
-		Objects.requireNonNull(bytes, "bytes cannot be null");
-		
-		if(bytes.length < 4){
-			throw new IOException("bytes length must be at least of size : " + 4);
-		}
-		
-		ByteBuffer bb = ByteBuffer.wrap(bytes);
-		
-		Collection<IColumnEntry> columnEntries = new ArrayList<>();
-		while(bb.hasRemaining()){
-			Short contentSize = bb.getShort();
+		try{
 			
-			byte[] contentBuffer = new byte[contentSize];
-			bb.get(contentBuffer);
+			if(bytes == null){
+				throw new IOException("bytes cannot be null");
+			}
 			
-			IColumnEntry columnEntry = new ColumnEntry(contentSize, contentBuffer);
-			columnEntries.add(columnEntry);
-		}
+			if(bytes.length < ENTRY_MIN_SIZE){
+				throw new IOException("bytes length must be at least of size : " + ENTRY_MIN_SIZE);
+			}
+			
+			ByteBuffer bb = ByteBuffer.wrap(bytes);
+			Integer rowEntrySize = bb.getInt();
+			
+			if(bb.remaining() > rowEntrySize){
+				throw new IOException("bytes overflow.");
+			}
+			
+			if(bb.remaining() < rowEntrySize){
+				throw new IOException("bytes underflow.");
+			}
+			
+			Collection<IColumnEntry> columnEntries = new ArrayList<>();
+			while(bb.hasRemaining()){
+				Short contentSize = bb.getShort();
+				
+				byte[] contentBuffer = new byte[contentSize];
+				bb.get(contentBuffer);
+				
+				IColumnEntry columnEntry = new ColumnEntry(contentSize, contentBuffer);
+				columnEntries.add(columnEntry);
+			}
+			
+			setColumnsEntries(columnEntries);
 		
-		setColumnsEntries(columnEntries);
+		} catch (IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IOException("Error while parsing the bytes.", e);
+		}
 	}
 	
 }

@@ -1,5 +1,7 @@
 package br.com.xavier.suricate.dbms.impl.table.data;
 
+import java.io.IOException;
+
 import br.com.xavier.suricate.dbms.abstractions.table.data.AbstractColumnEntry;
 
 public final class ColumnEntry
@@ -13,6 +15,10 @@ public final class ColumnEntry
 	
 	public ColumnEntry(Short contentSize, byte[] content) {
 		super(contentSize, content);
+	}
+	
+	public ColumnEntry(byte[] bytes) throws IOException {
+		super(bytes);
 	}
 
 }

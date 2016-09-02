@@ -1,13 +1,16 @@
 package br.com.xavier.suricate.dbms.interfaces.table.data;
 
-import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsNot.*;
-import static org.hamcrest.core.IsEqual.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.After;
@@ -51,7 +54,7 @@ public abstract class IColumnEntryTest {
 		 
 		 int size = Short.BYTES + contentSize;
 		 ByteBuffer bb = ByteBuffer.allocate(size);
-		 bb.order(ByteOrder.BIG_ENDIAN);
+		 
 		 bb.putShort(contentSize);
 		 bb.put(content);
 		 
