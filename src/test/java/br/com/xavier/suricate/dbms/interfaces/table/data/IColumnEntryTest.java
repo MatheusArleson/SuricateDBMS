@@ -49,7 +49,7 @@ public abstract class IColumnEntryTest {
 	}
 
 	private void setupProperties() {
-		 content = new String("content").getBytes(StandardCharsets.UTF_16BE);
+		 content = new String("c").getBytes(StandardCharsets.UTF_16BE);
 		 contentSize = new Integer(content.length).shortValue();
 		 
 		 int size = Short.BYTES + contentSize;

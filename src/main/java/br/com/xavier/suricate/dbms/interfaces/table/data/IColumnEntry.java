@@ -12,6 +12,7 @@ public interface IColumnEntry
 	public static final Short CONTENT_MIN_LENGTH = 1;
 	public static final Short CONTENT_MAX_LENGTH = Short.MAX_VALUE;  
 	
+	Integer getEntrySize(); 
 	Short getContentSize();
 	byte[] getContent();
 	void setContent(byte[] content);

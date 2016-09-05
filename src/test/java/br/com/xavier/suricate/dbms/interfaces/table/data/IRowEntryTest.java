@@ -56,21 +56,26 @@ public abstract class IRowEntryTest {
 
 	private void generateProperties() throws IOException {
 		byte[] content = new String("c").getBytes(StandardCharsets.UTF_16BE);
-		Short contentSize = new Integer(content.length).shortValue();
-		IColumnEntry columnEntry = new ColumnEntry(contentSize, content);
+		Short contentSize = ((Integer) content.length).shortValue();
+		
+		ByteBuffer bb = ByteBuffer.allocate(contentSize + Short.BYTES);
+		bb.putShort(contentSize);
+		bb.put(content);
+		
+		IColumnEntry columnEntry = new ColumnEntry(bb.array());
 		
 		columnsEntries = new ArrayList<>();
 		columnsEntries.add(columnEntry);
 		
 		entrySize = new Integer(4);
 		for (IColumnEntry c : columnsEntries) {
-			entrySize = entrySize + (Short.BYTES + c.getContentSize()); 
+			entrySize = entrySize + (c.getEntrySize()); 
 		}
 		
 		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(columnsEntries);
 		Integer size = columnsEntriesBytes.length + Integer.BYTES;
 		
-		ByteBuffer bb = ByteBuffer.allocate(size);
+		bb = ByteBuffer.allocate(size);
 		
 		bb.putInt(entrySize);
 		bb.put(columnsEntriesBytes);
@@ -78,18 +83,33 @@ public abstract class IRowEntryTest {
 		propertiesBytes = bb.array();
 	}
 	
-	private void generateOtherProperties() {
-		byte[] content = new String("otherContent").getBytes(StandardCharsets.UTF_16BE);
-		Short contentSize = new Integer(content.length).shortValue();
-		IColumnEntry columnEntry = new ColumnEntry(contentSize, content);
+	private void generateOtherProperties() throws IOException {
+		byte[] content = new String("o").getBytes(StandardCharsets.UTF_16BE);
+		Short contentSize = ((Integer) content.length).shortValue();
+		
+		ByteBuffer bb = ByteBuffer.allocate(contentSize + Short.BYTES);
+		bb.putShort(contentSize);
+		bb.put(content);
+		
+		IColumnEntry columnEntry = new ColumnEntry(bb.array());
 		
 		otherColumnsEntries = new ArrayList<>();
 		otherColumnsEntries.add(columnEntry);
 		
-		otherEntrySize = new Integer(0);
+		otherEntrySize = new Integer(4);
 		for (IColumnEntry c : otherColumnsEntries) {
-			otherEntrySize = otherEntrySize + c.getContentSize(); 
+			otherEntrySize = otherEntrySize + (c.getEntrySize()); 
 		}
+		
+		//byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(otherColumnsEntries);
+		//Integer size = columnsEntriesBytes.length + Integer.BYTES;
+		
+		//bb = ByteBuffer.allocate(size);
+		
+		//bb.putInt(otherEntrySize);
+		//bb.put(columnsEntriesBytes);
+		
+		//otherPropertiesBytes = bb.array();
 	}
 
 	//XXX AFTER METHODS

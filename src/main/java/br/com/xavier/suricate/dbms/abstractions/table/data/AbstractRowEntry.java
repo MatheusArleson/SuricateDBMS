@@ -92,7 +92,7 @@ public class AbstractRowEntry
 	private void setRowEntrySize(Collection<IColumnEntry> columnsEntries) {
 		Integer entrySize = new Integer(4);
 		for (IColumnEntry c : columnsEntries) {
-			entrySize = entrySize + c.getContentSize(); 
+			entrySize = entrySize + c.getEntrySize(); 
 		}
 		
 		this.size = entrySize;

@@ -70,7 +70,7 @@ public interface IRowEntry
 				byte[] contentBuffer = new byte[contentSize];
 				bb.get(contentBuffer);
 				
-				IColumnEntry columnEntry = new ColumnEntry(contentSize, contentBuffer);
+				IColumnEntry columnEntry = new ColumnEntry(contentBuffer);
 				columnEntries.add(columnEntry);
 			}
 			

@@ -19,11 +19,6 @@ public class AbstractColumnEntry
 		super();
 	}
 	
-	public AbstractColumnEntry(Short contentSize, byte[] content) {
-		super();
-		setContent(content);
-	}
-	
 	public AbstractColumnEntry(byte[] bytes) throws IOException {
 		fromByteArray(bytes);
 	}
@@ -90,9 +85,7 @@ public class AbstractColumnEntry
 		}
 		
 		this.content = content;
-		
-		Integer sizeHolderSize = Short.BYTES + contentLength;
-		this.contentSize = sizeHolderSize.shortValue();
+		this.contentSize = contentLength.shortValue();
 	}
 	
 	@Override
@@ -102,5 +95,16 @@ public class AbstractColumnEntry
 		}
 		
 		return new Short(contentSize);
+	}
+	
+	@Override
+	public Integer getEntrySize() {
+		Short contentSize = getContentSize();
+		
+		if(contentSize == null){
+			return null;
+		}
+		
+		return contentSize + Short.BYTES;
 	}
 }

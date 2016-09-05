@@ -13,10 +13,6 @@ public final class ColumnEntry
 		super();
 	}
 	
-	public ColumnEntry(Short contentSize, byte[] content) {
-		super(contentSize, content);
-	}
-	
 	public ColumnEntry(byte[] bytes) throws IOException {
 		super(bytes);
 	}
