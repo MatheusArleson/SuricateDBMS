@@ -7,6 +7,7 @@ import java.util.Collection;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
+import br.com.xavier.util.ObjectsUtils;
 
 public abstract class AbstractTableDataBlock
 		implements ITableDataBlock {
@@ -18,22 +19,21 @@ public abstract class AbstractTableDataBlock
 	private Collection<IRowEntry> rows;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTableDataBlock(ITableDataBlockHeader header) {
+	public AbstractTableDataBlock() {
 		super();
-		this.header = header;
-		this.rows = new ArrayList<>();
 	}
 	
-	public AbstractTableDataBlock(ITableDataBlockHeader header, Collection<IRowEntry> rows) {
-		this(header);
-		this.rows.addAll(rows);
+	public AbstractTableDataBlock(ITableDataBlockHeader header) {
+		super();
+		setHeader(header);
+		setRows(new ArrayList<>());
 	}
 	
 	public AbstractTableDataBlock(byte[] bytes) throws IOException {
 		super();
 		fromByteArray(bytes);
 	}
-	
+
 	//XXX OVERRIDE METHODS
 	@Override
 	public int hashCode() {
@@ -75,17 +75,43 @@ public abstract class AbstractTableDataBlock
 
 	@Override
 	public void setHeader(ITableDataBlockHeader header) {
+		if(header == null){
+			throw new IllegalArgumentException("Table Data Block Header instance must not be null.");
+		}
+		
 		this.header = header;
 	}
 
 	@Override
 	public Collection<IRowEntry> getRows() {
-		return rows;
+		if(rows == null){
+			return null;
+		}
+		
+		return new ArrayList<>(rows);
 	}
 
 	@Override
 	public void setRows(Collection<IRowEntry> rows) {
-		this.rows = rows;
+		if(rows == null){
+			throw new IllegalArgumentException("Rows collection instance must not be null.");
+		}
+		
+		if(rows.isEmpty()){
+			throw new IllegalArgumentException("Rows collection must not be empty.");
+		}
+		
+		boolean anyNull = ObjectsUtils.anyNull(rows.toArray());
+		if(anyNull){
+			throw new IllegalArgumentException("Rows collections must not have null values.");
+		}
+		
+		if(this.rows == null){
+			this.rows = new ArrayList<>();
+		}
+		
+		this.rows.clear();
+		this.rows.addAll(rows);
 	}
 
 }
