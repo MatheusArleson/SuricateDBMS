@@ -25,7 +25,8 @@ public abstract class IRowEntryTest {
 	private IRowEntry instance;
 	
 	//XXX TEST PROPERTIES
-	private Integer entrySize;
+	private Integer rowEntrySize;
+	private Integer columnsEntriesSize;
 	private Collection<IColumnEntry> columnsEntries;
 	private byte[] propertiesBytes;
 	
@@ -67,17 +68,17 @@ public abstract class IRowEntryTest {
 		columnsEntries = new ArrayList<>();
 		columnsEntries.add(columnEntry);
 		
-		entrySize = new Integer(4);
+		columnsEntriesSize = new Integer(0);
 		for (IColumnEntry c : columnsEntries) {
-			entrySize = entrySize + (c.getEntrySize()); 
+			columnsEntriesSize = columnsEntriesSize + (c.getEntrySize()); 
 		}
 		
 		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(columnsEntries);
-		Integer size = columnsEntriesBytes.length + Integer.BYTES;
+		rowEntrySize = columnsEntriesBytes.length + Integer.BYTES;
 		
-		bb = ByteBuffer.allocate(size);
+		bb = ByteBuffer.allocate(rowEntrySize);
 		
-		bb.putInt(entrySize);
+		bb.putInt(rowEntrySize);
 		bb.put(columnsEntriesBytes);
 		
 		propertiesBytes = bb.array();
@@ -96,7 +97,7 @@ public abstract class IRowEntryTest {
 		otherColumnsEntries = new ArrayList<>();
 		otherColumnsEntries.add(columnEntry);
 		
-		otherEntrySize = new Integer(4);
+		otherEntrySize = new Integer(0);
 		for (IColumnEntry c : otherColumnsEntries) {
 			otherEntrySize = otherEntrySize + (c.getEntrySize()); 
 		}
@@ -117,7 +118,8 @@ public abstract class IRowEntryTest {
 	public void destroy() {
 		instance = null;
 		
-		entrySize = null;
+		rowEntrySize = null;
+		columnsEntriesSize = null;
 		columnsEntries = null;
 		propertiesBytes = null;
 		
@@ -128,25 +130,35 @@ public abstract class IRowEntryTest {
 	//XXX TEST METHODS
 	
 	//-------------
-	// SIZE
+	// ENTRY SIZE
 	//-------------
 	@Test
-	public void getSizeTest(){
+	public void getEntrySizeTest(){
 		instance.setColumnsEntries(columnsEntries);
 		
-		assertEquals(entrySize, instance.getSize());
+		assertEquals(rowEntrySize, instance.getEntrySize());
+	}
+	
+	//-------------
+	// COLUMNS ENTRIES SIZE
+	//-------------
+	@Test
+	public void getColumnsEntrySizeTest(){
+		instance.setColumnsEntries(columnsEntries);
+		
+		assertEquals(columnsEntriesSize, instance.getColumnsEntrySize());
 	}
 	
 	@Test
-	public void getSizeReferenceMustBeAClone(){
+	public void getColumnsEntrySizeReferenceMustBeAClone(){
 		instance.setColumnsEntries(columnsEntries);
-		Integer sizeClone = instance.getSize();
+		Integer sizeClone = instance.getColumnsEntrySize();
 		
-		assertNotSame(entrySize, instance.getSize());
-		assertEquals(entrySize, instance.getSize());
+		assertNotSame(columnsEntriesSize, instance.getColumnsEntrySize());
+		assertEquals(columnsEntriesSize, instance.getColumnsEntrySize());
 		
-		assertNotSame(sizeClone, instance.getSize());
-		assertEquals(sizeClone, instance.getSize());
+		assertNotSame(sizeClone, instance.getColumnsEntrySize());
+		assertEquals(sizeClone, instance.getColumnsEntrySize());
 	}
 	
 	//-------------
@@ -173,7 +185,7 @@ public abstract class IRowEntryTest {
 	public void setColumnsEntriesMustAlsoSetEntrySize(){
 		instance.setColumnsEntries(columnsEntries);
 		
-		assertEquals(entrySize, instance.getSize());
+		assertEquals(columnsEntriesSize, instance.getColumnsEntrySize());
 	}
 	
 	@Test
@@ -237,7 +249,7 @@ public abstract class IRowEntryTest {
 		instance.fromByteArray(propertiesBytes);
 		
 		assertEquals(columnsEntries, instance.getColumnsEntries());
-		assertEquals(entrySize, instance.getSize());
+		assertEquals(columnsEntriesSize, instance.getColumnsEntrySize());
 	}
 	
 	@Test

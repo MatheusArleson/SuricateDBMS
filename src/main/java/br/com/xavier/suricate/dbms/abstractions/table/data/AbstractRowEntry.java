@@ -70,6 +70,16 @@ public class AbstractRowEntry
 		+ "]";
 	}
 	
+	//XXX GETTERS/SETTERS
+	@Override
+	public Collection<IColumnEntry> getColumnsEntries() {
+		if(columnsEntries == null){
+			return null;
+		}
+		
+		return new ArrayList<>(columnsEntries);
+	}
+	
 	@Override
 	public void setColumnsEntries(Collection<IColumnEntry> columnsEntries) {
 		if(columnsEntries == null){
@@ -86,11 +96,20 @@ public class AbstractRowEntry
 		}
 		
 		this.columnsEntries = columnsEntries;
-		setRowEntrySize(columnsEntries);
+		setColumnsEntrySize(columnsEntries);
+	}
+	
+	@Override
+	public Integer getColumnsEntrySize() {
+		if(size == null){
+			return null;
+		}
+		
+		return new Integer(size);
 	}
 
-	private void setRowEntrySize(Collection<IColumnEntry> columnsEntries) {
-		Integer entrySize = new Integer(4);
+	private void setColumnsEntrySize(Collection<IColumnEntry> columnsEntries) {
+		Integer entrySize = new Integer(0);
 		for (IColumnEntry c : columnsEntries) {
 			entrySize = entrySize + c.getEntrySize(); 
 		}
@@ -98,22 +117,14 @@ public class AbstractRowEntry
 		this.size = entrySize;
 	}
 
-	//XXX GETTERS/SETTERS
 	@Override
-	public Collection<IColumnEntry> getColumnsEntries() {
-		if(columnsEntries == null){
+	public Integer getEntrySize() {
+		Integer columnsEntrySize = getColumnsEntrySize();
+		if(columnsEntrySize == null){
 			return null;
 		}
 		
-		return new ArrayList<>(columnsEntries);
+		return Integer.BYTES + columnsEntrySize;
 	}
 	
-	@Override
-	public Integer getSize() {
-		if(size == null){
-			return null;
-		}
-		
-		return new Integer(size);
-	}
 }

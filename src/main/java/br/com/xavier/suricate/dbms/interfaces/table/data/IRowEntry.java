@@ -15,26 +15,28 @@ public interface IRowEntry
 	
 	public static final Integer ENTRY_MIN_SIZE = Integer.BYTES + Short.BYTES + 2;
 	
-	Integer getSize();
+	Integer getEntrySize();
+	Integer getColumnsEntrySize();
 	Collection<IColumnEntry> getColumnsEntries();
 	void setColumnsEntries(Collection<IColumnEntry> columnsEntries);
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
 		Collection<IColumnEntry> columnsEntries = getColumnsEntries();
-		Integer entrySize = getSize();
+		Integer columnsEntriesSize = getColumnsEntrySize();
+		Integer rowEntrySize = getEntrySize();
 		
-		boolean anyNull = ObjectsUtils.anyNull(entrySize, columnsEntries);
+		boolean anyNull = ObjectsUtils.anyNull(rowEntrySize, columnsEntriesSize, columnsEntries);
 		if(anyNull){
 			throw new IOException("To transform to byte[] all properties must not be null.");
 		}
 		
+		
+		ByteBuffer bb = ByteBuffer.allocate(rowEntrySize);
+		
+		bb.putInt(rowEntrySize);
+		
 		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(columnsEntries);
-		Integer size = columnsEntriesBytes.length + Integer.BYTES;
-		
-		ByteBuffer bb = ByteBuffer.allocate(size);
-		
-		bb.putInt(entrySize);
 		bb.put(columnsEntriesBytes);
 		
 		return bb.array();
