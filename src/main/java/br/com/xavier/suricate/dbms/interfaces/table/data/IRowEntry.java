@@ -31,12 +31,11 @@ public interface IRowEntry
 			throw new IOException("To transform to byte[] all properties must not be null.");
 		}
 		
+		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(columnsEntries);
 		
 		ByteBuffer bb = ByteBuffer.allocate(rowEntrySize);
 		
-		bb.putInt(rowEntrySize);
-		
-		byte[] columnsEntriesBytes = ByteArrayUtils.toByteArray(columnsEntries);
+		bb.putInt(columnsEntriesSize);
 		bb.put(columnsEntriesBytes);
 		
 		return bb.array();
@@ -55,21 +54,22 @@ public interface IRowEntry
 			}
 			
 			ByteBuffer bb = ByteBuffer.wrap(bytes);
-			Integer rowEntrySize = bb.getInt();
+			Integer columnsEntriesSize = bb.getInt();
 			
-			if(bb.remaining() > rowEntrySize){
+			if(bb.remaining() > columnsEntriesSize){
 				throw new IOException("bytes overflow.");
 			}
 			
-			if(bb.remaining() < rowEntrySize){
+			if(bb.remaining() < columnsEntriesSize){
 				throw new IOException("bytes underflow.");
 			}
 			
 			Collection<IColumnEntry> columnEntries = new ArrayList<>();
 			while(bb.hasRemaining()){
 				Short contentSize = bb.getShort();
+				bb.position(bb.position() - Short.BYTES);
 				
-				byte[] contentBuffer = new byte[contentSize];
+				byte[] contentBuffer = new byte[Short.BYTES + contentSize];
 				bb.get(contentBuffer);
 				
 				IColumnEntry columnEntry = new ColumnEntry(contentBuffer);

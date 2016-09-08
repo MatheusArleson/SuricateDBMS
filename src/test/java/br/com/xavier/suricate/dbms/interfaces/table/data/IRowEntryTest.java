@@ -78,7 +78,7 @@ public abstract class IRowEntryTest {
 		
 		bb = ByteBuffer.allocate(rowEntrySize);
 		
-		bb.putInt(rowEntrySize);
+		bb.putInt(columnsEntriesSize);
 		bb.put(columnsEntriesBytes);
 		
 		propertiesBytes = bb.array();
@@ -250,6 +250,7 @@ public abstract class IRowEntryTest {
 		
 		assertEquals(columnsEntries, instance.getColumnsEntries());
 		assertEquals(columnsEntriesSize, instance.getColumnsEntrySize());
+		assertEquals(rowEntrySize, instance.getEntrySize());
 	}
 	
 	@Test
