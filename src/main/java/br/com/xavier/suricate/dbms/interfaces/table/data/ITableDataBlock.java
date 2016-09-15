@@ -10,6 +10,7 @@ import br.com.xavier.suricate.dbms.impl.table.data.RowEntry;
 import br.com.xavier.suricate.dbms.impl.table.data.TableDataBlockHeader;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
 import br.com.xavier.util.ByteArrayUtils;
+import br.com.xavier.util.ObjectsUtils;
 
 public interface ITableDataBlock
 		extends IBinarizable {
@@ -21,8 +22,16 @@ public interface ITableDataBlock
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
-		byte[] headerBytes = getHeader().toByteArray();
-		byte[] rowsBytes = ByteArrayUtils.toByteArray(getRows());
+		ITableDataBlockHeader header = getHeader();
+		Collection<IRowEntry> rows = getRows();
+		
+		boolean anyNull = ObjectsUtils.anyNull(header, rows);
+		if(anyNull){
+			throw new IOException("To transform to byte[] all properties must not be null.");
+		}
+		
+		byte[] headerBytes = header.toByteArray();
+		byte[] rowsBytes = ByteArrayUtils.toByteArray(rows);
 		
 		byte[] byteArray = ByteArrayUtils.toByteArray(headerBytes, rowsBytes);
 		return byteArray;
@@ -49,7 +58,7 @@ public interface ITableDataBlock
 			Integer rowSize = bb.getInt();
 			byte[] rowEntryBuffer = new byte[rowSize];
 			
-			bb.position(bb.position() - 4);
+			//bb.position(bb.position() - 4);
 			bb.get(rowEntryBuffer);
 			
 			IRowEntry rowEntry = new RowEntry(rowEntryBuffer);
