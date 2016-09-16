@@ -1,15 +1,18 @@
 package br.com.xavier.suricate.dbms.abstractions.table;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.Factory;
+import br.com.xavier.suricate.dbms.enums.FileModes;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
+import br.com.xavier.util.FileUtils;
 
 public class AbstractTable 
 		implements ITable {
@@ -23,13 +26,23 @@ public class AbstractTable
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTable(RandomAccessFile file) throws IOException {
+	public AbstractTable(File file) throws IOException {
 		super();
-		this.file = file;
 		
-		byte[] bytes = Factory.getTableHeaderBlockBytes(file);
+		FileUtils.validateInstance(file, false, true);
+		RandomAccessFile raf = new RandomAccessFile(file, FileModes.READ_WRITE_CONTENT_SYNC.getMode());
+		
+		this.file = raf;
+		
+		byte[] bytes = Factory.getTableHeaderBlockBytes(raf);
 		this.headerBlock = new TableHeaderBlock(bytes);
+		
+		//XXX FIXME terminar construcao do metodo
 		this.dataBlocks = new ArrayList<>();
+	}
+	
+	public AbstractTable(byte[] bytes) throws IOException {
+		fromByteArray(bytes);
 	}
 
 	//XXX OVERRIDE METHODS
