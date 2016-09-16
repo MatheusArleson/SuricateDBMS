@@ -56,9 +56,10 @@ public interface ITableDataBlock
 		Collection<IRowEntry> rowEntries = new ArrayList<>();
 		while(bb.hasRemaining()){
 			Integer rowSize = bb.getInt();
-			byte[] rowEntryBuffer = new byte[rowSize];
+			Integer rowEntrySize = Integer.BYTES + rowSize;
+			byte[] rowEntryBuffer = new byte[rowEntrySize];
 			
-			//bb.position(bb.position() - 4);
+			bb.position(bb.position() - Integer.BYTES);
 			bb.get(rowEntryBuffer);
 			
 			IRowEntry rowEntry = new RowEntry(rowEntryBuffer);
