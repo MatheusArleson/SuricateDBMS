@@ -1,7 +1,7 @@
 package br.com.xavier.suricate.dbms.interfaces.table;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
@@ -12,7 +12,8 @@ import br.com.xavier.util.ByteArrayUtils;
 public interface ITable 
 		extends IBinarizable {
 	
-	RandomAccessFile getFile();
+	File getFile();
+	void setFile(File file) throws IOException;
 	ITableHeaderBlock getHeaderBlock();
 	void setHeaderBlock(ITableHeaderBlock header);
 	Collection<ITableDataBlock> getDataBlocks();
@@ -29,6 +30,7 @@ public interface ITable
 	
 	@Override
 	default void fromByteArray(byte[] bytes) throws IOException {
+		//TODO FIXME finish method
 		throw new IOException("Cant setup table instances from byte array");
 	}
 }

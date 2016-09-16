@@ -2,7 +2,6 @@ package br.com.xavier.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 
 public class FileUtils {
 	
@@ -26,5 +25,5 @@ public class FileUtils {
 			throw new IOException("Cannot read in : " + absolutePath);
 		}
 	}
-
+	
 }

@@ -70,7 +70,8 @@ public class AbstractDbms
 		for (File file : files) {
 			RandomAccessFile raf = new RandomAccessFile(file, FileModes.READ_WRITE.getMode());
 			Factory.getTableHeaderBlockBytes(raf);
-			Table table = new Table(raf);
+			
+			Table table = new Table(file);
 			tables.add(table);
 		}
 	}

@@ -23,10 +23,15 @@ public abstract class AbstractTableDataBlock
 		super();
 	}
 	
-	public AbstractTableDataBlock(ITableDataBlockHeader header) {
+	public AbstractTableDataBlock(ITableDataBlockHeader header, Collection<IRowEntry> rows) {
 		super();
 		setHeader(header);
-		setRows(new ArrayList<>());
+		
+		if(rows != null && rows.isEmpty()){
+			this.rows = new ArrayList<>();
+		} else {
+			setRows(rows);
+		}
 	}
 	
 	public AbstractTableDataBlock(byte[] bytes) throws IOException {

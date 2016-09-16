@@ -2,17 +2,19 @@ package br.com.xavier.suricate.dbms.abstractions.table;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.commons.io.FilenameUtils;
+
 import br.com.xavier.suricate.dbms.Factory;
-import br.com.xavier.suricate.dbms.enums.FileModes;
 import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.util.FileUtils;
+import br.com.xavier.util.ObjectsUtils;
+import br.com.xavier.util.StringUtils;
 
 public class AbstractTable 
 		implements ITable {
@@ -20,7 +22,7 @@ public class AbstractTable
 	private static final long serialVersionUID = 4883170740788262539L;
 
 	//XXX PROPERTIES
-	private RandomAccessFile file;
+	private File file;
 	
 	private ITableHeaderBlock headerBlock;
 	private Collection<ITableDataBlock> dataBlocks;
@@ -28,14 +30,7 @@ public class AbstractTable
 	//XXX CONSTRUCTORS
 	public AbstractTable(File file) throws IOException {
 		super();
-		
-		FileUtils.validateInstance(file, false, true);
-		RandomAccessFile raf = new RandomAccessFile(file, FileModes.READ_WRITE_CONTENT_SYNC.getMode());
-		
-		this.file = raf;
-		
-		byte[] bytes = Factory.getTableHeaderBlockBytes(raf);
-		this.headerBlock = new TableHeaderBlock(bytes);
+		setFile(file);
 		
 		//XXX FIXME terminar construcao do metodo
 		this.dataBlocks = new ArrayList<>();
@@ -81,8 +76,30 @@ public class AbstractTable
 
 	//XXX GETTERS/SETTERS
 	@Override
-	public RandomAccessFile getFile() {
+	public File getFile() {
 		return file;
+	}
+	
+	@Override
+	public void setFile(File file) throws IOException {
+		try {
+			FileUtils.validateInstance(file, false, true);
+			
+			String extension = FilenameUtils.getExtension(file.getName());
+			if(StringUtils.isNullOrEmpty(extension)){
+				throw new IllegalArgumentException("Invalid file extension : " + extension);
+			}
+			
+			this.file = file;
+			
+			byte[] bytes = Factory.getTableHeaderBlockBytes(file);
+			this.headerBlock = new TableHeaderBlock(bytes);
+			
+		} catch(IOException e){
+			throw e;
+		} catch(Exception e){
+			throw new IOException(e);
+		}
 	}
 
 	@Override
@@ -92,17 +109,39 @@ public class AbstractTable
 
 	@Override
 	public void setHeaderBlock(ITableHeaderBlock headerBlock) {
+		if(headerBlock == null){
+			throw new IllegalArgumentException("Header block instance must not be null.");
+		}
+		
 		this.headerBlock = headerBlock;
 	}
 
 	@Override
 	public Collection<ITableDataBlock> getDataBlocks() {
-		return dataBlocks;
+		return new ArrayList<>(dataBlocks);
 	}
 
 	@Override
 	public void setDataBlocks(Collection<ITableDataBlock> dataBlocks) {
-		this.dataBlocks = dataBlocks;
+		if(dataBlocks == null){
+			throw new IllegalArgumentException("Data blocks collection instance must not be null.");
+		}
+		
+		if(dataBlocks.isEmpty()){
+			throw new IllegalArgumentException("Data blocks collection must not be empty.");
+		}
+		
+		boolean anyNull = ObjectsUtils.anyNull(dataBlocks.toArray());
+		if(anyNull){
+			throw new IllegalArgumentException("Data blocks collections must not have null values.");
+		}
+		
+		if(this.dataBlocks == null){
+			this.dataBlocks = new ArrayList<>();
+		}
+		
+		this.dataBlocks.clear();
+		this.dataBlocks.addAll(dataBlocks);
 	}
 
 }
