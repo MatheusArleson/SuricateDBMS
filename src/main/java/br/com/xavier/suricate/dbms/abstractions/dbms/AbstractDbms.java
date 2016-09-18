@@ -68,8 +68,7 @@ public class AbstractDbms
 		this.tables = new ArrayList<>();
 		
 		for (File file : files) {
-			RandomAccessFile raf = new RandomAccessFile(file, FileModes.READ_WRITE.getMode());
-			Factory.getTableHeaderBlockBytes(raf);
+			Factory.getTableHeaderBlockBytes(file);
 			
 			Table table = new Table(file);
 			tables.add(table);

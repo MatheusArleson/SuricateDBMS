@@ -23,56 +23,51 @@ public class AbstractTable
 
 	//XXX PROPERTIES
 	private File file;
+	private boolean lazyLoadDataBlocks;
 	
 	private ITableHeaderBlock headerBlock;
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTable(File file) throws IOException {
-		super();
-		setFile(file);
-		
-		//XXX FIXME terminar construcao do metodo
-		this.dataBlocks = new ArrayList<>();
-	}
-	
 	public AbstractTable(byte[] bytes) throws IOException {
 		fromByteArray(bytes);
 	}
-
-	//XXX OVERRIDE METHODS
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((headerBlock == null) ? 0 : headerBlock.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AbstractTable other = (AbstractTable) obj;
-		if (headerBlock == null) {
-			if (other.headerBlock != null)
-				return false;
-		} else if (!headerBlock.equals(other.headerBlock))
-			return false;
-		return true;
+	
+	public AbstractTable(File file) throws IOException {
+		this(file, true);
 	}
 	
-	@Override
-	public String toString() {
-		return "AbstractTable [" 
-			+ "file=" + file 
-			+ ", headerBlock=" + headerBlock 
-		+ "]";
+	public AbstractTable(File file, boolean lazyLoadDataBlocks) throws IOException {
+		super();
+		setFile(file);
+		setLazyLoadDataBlocks(lazyLoadDataBlocks);
+		
+		initialize();
 	}
+	
+	private void initialize() throws IOException {
+		initializeHeaderBlock();
+		initializeDataBlocks();
+	}
+	
+	private void initializeHeaderBlock() throws IOException {
+		byte[] headerBytes = Factory.getTableHeaderBlockBytes(getFile());
+		ITableHeaderBlock headerBlock = new TableHeaderBlock(headerBytes);
+		setHeaderBlock(headerBlock);
+	}
+
+	private void initializeDataBlocks() {
+		this.dataBlocks = new ArrayList<>();
+		
+		if(lazyLoadDataBlocks){
+			return;
+		} else {
+			
+		}
+	}
+
+	//XXX OVERRIDE METHODS
+	
 
 	//XXX GETTERS/SETTERS
 	@Override
@@ -100,6 +95,14 @@ public class AbstractTable
 		} catch(Exception e){
 			throw new IOException(e);
 		}
+	}
+	
+	public void setLazyLoadDataBlocks(boolean lazyLoadDataBlocks) {
+		this.lazyLoadDataBlocks = lazyLoadDataBlocks;
+	}
+	
+	public boolean isLazyLoadDataBlocks() {
+		return lazyLoadDataBlocks;
 	}
 
 	@Override

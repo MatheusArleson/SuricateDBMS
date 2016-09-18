@@ -159,7 +159,7 @@ public abstract class ITableTest {
 	}
 	
 	@Test(expected = IOException.class)
-	public void setFileMustReloadTableHeaderBlock() throws IOException{
+	public void setFileMustReloadTableHeaderBlock() throws IOException {
 		instance.setHeaderBlock(headerBlock);
 		
 		assertSame(headerBlock, instance.getHeaderBlock());
