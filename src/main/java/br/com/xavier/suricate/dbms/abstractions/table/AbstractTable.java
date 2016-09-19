@@ -86,9 +86,7 @@ public class AbstractTable
 			}
 			
 			this.file = file;
-			
-			byte[] bytes = Factory.getTableHeaderBlockBytes(file);
-			this.headerBlock = new TableHeaderBlock(bytes);
+			initialize();
 			
 		} catch(IOException e){
 			throw e;
