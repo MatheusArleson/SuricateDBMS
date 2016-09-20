@@ -1,15 +1,16 @@
 package br.com.xavier.suricate.dbms.interfaces.services;
 
-import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+import java.io.IOException;
+
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 
 public interface IBufferManager {
 	
-	ITableDataBlock fetchBlock(IRowId rowId);
-	void swapIn();
-	void swapOut();
-	boolean isBlockInMemory(Byte tableId, IThreeByteValue blockId);
-	void flush();
+	ITableDataBlock getDataBlock(IRowId rowId) throws IOException;
+//	ITableDataBlock isBlockInMemory(IRowId rowId);
+//	void swapIn();
+//	void swapOut();
+	void flush() throws IOException;
 
 }

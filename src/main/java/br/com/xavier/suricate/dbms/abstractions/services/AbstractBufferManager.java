@@ -1,9 +1,11 @@
 package br.com.xavier.suricate.dbms.abstractions.services;
 
-import java.util.ArrayDeque;
+import java.io.IOException;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Objects;
 
+import br.com.xavier.suricate.dbms.impl.services.FileSystemManager;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.services.IBufferManager;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileSystemManager;
@@ -17,6 +19,7 @@ public class AbstractBufferManager
 	private IFileSystemManager fileSystemManager;
 	
 	//XXX BUFFER PROPERTIES
+	private int bufferSlots;
 	private Deque<ITableDataBlock> bufferDeque;
 	
 	//XXX STATISTICS PROPERTIES
@@ -26,27 +29,41 @@ public class AbstractBufferManager
 	//XXX CONSTRUCTOR
 	public AbstractBufferManager(IFileSystemManager fileSystemManager, int bufferSlots) {
 		this.fileSystemManager = Objects.requireNonNull(fileSystemManager);
-		this.bufferDeque = new ArrayDeque<>(bufferSlots);
+		this.bufferDeque = new LinkedList<>();
 		this.acessCount = new Long(0L);
 		this.hitCount = new Long(0L);
 	}
 	
 	//XXX OVERRIDE METHODS
 	@Override
-	public ITableDataBlock fetchBlock(IRowId rowId) {
+	public ITableDataBlock getDataBlock(IRowId rowId) {
 		validateRowID(rowId);
-		
 		acessCount++;
 		
-		boolean blockInMemory = isBlockInMemory(rowId.getTableId(), rowId.getBlockId());
-		if(blockInMemory){
+		ITableDataBlock dataBlock = isBlockInMemory(rowId);
+		boolean hit = false;
+		if(dataBlock != null){
+			hit = true;
 			hitCount++;
-			//bufferDeque.remove
-		}
+			return dataBlock;
+		} 
+			
+		dataBlock = fetchBlockFromFileSystem(rowId);
 		
-		return null;
+		swapOut(dataBlock, hit);
+		swapIn(dataBlock);
+		
+		return dataBlock;
 	}
 	
+	@Override
+	public void flush() throws IOException {
+		for (ITableDataBlock dataBlock : bufferDeque) {
+			fileSystemManager.writeDataBlock(dataBlock);
+		}
+	}
+
+	//XXX PRIVATE METHODS
 	private void validateRowID(IRowId rowId) {
 		if(rowId == null){
 			throw new IllegalArgumentException("Null rowId instance.");
@@ -68,56 +85,41 @@ public class AbstractBufferManager
 		}
 	}
 	
-	@Override
-	public boolean isBlockInMemory(Byte tableId, IThreeByteValue blockId) {
-		if(tableId == null){
-			throw new IllegalArgumentException("Null table id.");
-		}
-		
-		if(blockId == null || blockId.getValue() == null){
-			throw new IllegalArgumentException("Null block id.");
-		}
-		
+	private ITableDataBlock isBlockInMemory(IRowId rowId) {
 		if(bufferDeque.isEmpty()){
-			return false;
+			return null;
 		}
 		
-		ITableDataBlock bufferedDB = fetchBlock(tableId, blockId);
-		if(bufferedDB != null){
-			return true;
-		}
-		
-		return false;
+		ITableDataBlock bufferedDB = fetchBlockFromBuffer(rowId);
+		return bufferedDB;
 	}
-
-	private ITableDataBlock fetchBlock(Byte tableId, IThreeByteValue blockId) {
+	
+	private ITableDataBlock fetchBlockFromBuffer(IRowId rowId) {
+		Byte tableId = rowId.getTableId();
+		IThreeByteValue blockId = rowId.getBlockId();
+		
 		ITableDataBlock bufferedDB = bufferDeque.stream()
 												.filter(p -> p.getHeader().getTableId().equals(tableId) && p.getHeader().getBlockId().equals(blockId))
 												.findFirst()
 												.orElse(null);
 		return bufferedDB;
 	}
-
 	
-
-	@Override
-	public void swapIn() {
-		// TODO Auto-generated method stub
-		
+	private ITableDataBlock fetchBlockFromFileSystem(IRowId rowId) {
+		return fileSystemManager.readDataBlock(rowId);
+	}
+	
+	private void swapIn(ITableDataBlock dataBlock) {
+		bufferDeque.addFirst(dataBlock);
 	}
 
-	@Override
-	public void swapOut() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-
-	@Override
-	public void flush() {
-		// TODO Auto-generated method stub
-		
+	private void swapOut(ITableDataBlock dataBlock, boolean hit) {
+		if(hit){
+			bufferDeque.remove(dataBlock);
+		} else {
+			ITableDataBlock dataBlockRemoved = bufferDeque.removeLast();
+			fileSystemManager.writeDataBlock(dataBlockRemoved);
+		}
 	}
 
 }

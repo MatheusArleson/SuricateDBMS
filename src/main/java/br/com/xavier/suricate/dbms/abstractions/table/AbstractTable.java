@@ -29,10 +29,6 @@ public class AbstractTable
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
-	public AbstractTable(byte[] bytes) throws IOException {
-		fromByteArray(bytes);
-	}
-	
 	public AbstractTable(File file) throws IOException {
 		this(file, true);
 	}
@@ -67,7 +63,56 @@ public class AbstractTable
 	}
 
 	//XXX OVERRIDE METHODS
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((file == null) ? 0 : file.hashCode());
+		result = prime * result + ((headerBlock == null) ? 0 : headerBlock.hashCode());
+		result = prime * result + (lazyLoadDataBlocks ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		AbstractTable other = (AbstractTable) obj;
+		if (file == null) {
+			if (other.file != null) {
+				return false;
+			}
+		} else if (!file.equals(other.file)) {
+			return false;
+		}
+		if (headerBlock == null) {
+			if (other.headerBlock != null) {
+				return false;
+			}
+		} else if (!headerBlock.equals(other.headerBlock)) {
+			return false;
+		}
+		if (lazyLoadDataBlocks != other.lazyLoadDataBlocks) {
+			return false;
+		}
+		return true;
+	}
 	
+	@Override
+	public String toString() {
+		return "AbstractTable [" 
+			+ "file=" + file 
+			+ ", lazyLoadDataBlocks=" + lazyLoadDataBlocks 
+			+ ", headerBlock=" + headerBlock 
+		+ "]";
+	}
 
 	//XXX GETTERS/SETTERS
 	@Override
@@ -75,6 +120,7 @@ public class AbstractTable
 		return file;
 	}
 	
+
 	@Override
 	public void setFile(File file) throws IOException {
 		try {

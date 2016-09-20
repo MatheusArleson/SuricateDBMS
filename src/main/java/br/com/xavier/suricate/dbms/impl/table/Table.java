@@ -14,8 +14,8 @@ public final class Table
 		super(file);
 	}
 	
-	public Table(byte[] bytes) throws IOException {
-		super(bytes);
+	public Table(File file, boolean lazyLoadDataBlocks) throws IOException {
+		super(file, lazyLoadDataBlocks);
 	}
 	
 }

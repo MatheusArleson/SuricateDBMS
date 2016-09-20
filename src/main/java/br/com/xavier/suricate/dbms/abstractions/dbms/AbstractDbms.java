@@ -3,15 +3,15 @@ package br.com.xavier.suricate.dbms.abstractions.dbms;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-import br.com.xavier.suricate.dbms.Factory;
-import br.com.xavier.suricate.dbms.enums.FileModes;
-import br.com.xavier.suricate.dbms.impl.table.Table;
+import br.com.xavier.suricate.dbms.impl.services.BufferManager;
+import br.com.xavier.suricate.dbms.impl.services.FileSystemManager;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
+import br.com.xavier.suricate.dbms.interfaces.services.IBufferManager;
+import br.com.xavier.suricate.dbms.interfaces.services.IFileSystemManager;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
@@ -24,55 +24,25 @@ public class AbstractDbms
 	//XXX DEPENDENCIES
 
 	//XXX WORKSPACE PROPERTIES
-	private FilenameFilter fileNameFilter;
 	private File workspaceFolder;
-	private Collection<ITable> tables; 
+	private FilenameFilter fileNameFilter;
+	private int bufferDataBlockSlots;
+	
+	private IBufferManager bufferManager;
+	private IFileSystemManager fileSystemManager;
 	
 	//XXX CONSTRUCTOR
-	public AbstractDbms(FilenameFilter fileNameFilter, File workspaceFolder) throws IOException {
-		this.fileNameFilter = Objects.requireNonNull(fileNameFilter, "File name filter must not be null.");
+	public AbstractDbms(File workspaceFolder, FilenameFilter fileNameFilter, int bufferDataBlockSlots) throws IOException {
 		this.workspaceFolder = Objects.requireNonNull(workspaceFolder, "Workspace folder must not be null.");
+		this.fileNameFilter = Objects.requireNonNull(fileNameFilter, "File name filter must not be null.");
+		this.bufferDataBlockSlots = bufferDataBlockSlots;
 		
 		initialize();
 	}
 	
 	private void initialize() throws IOException {
-		checkWorkspaceFolder();
-		analyzeWorkspace();
-	}
-	
-	private void checkWorkspaceFolder() throws IOException {
-		String absolutePath = workspaceFolder.getAbsolutePath();
-		if(!workspaceFolder.isDirectory()){
-			throw new IllegalArgumentException("Workspace must be a folder : " + absolutePath);
-		}
-		
-		if(!workspaceFolder.canRead()){
-			throw new IOException("Permission denied to read on Workspace folder : " + absolutePath);
-		}
-		
-		if(!workspaceFolder.canWrite()){
-			throw new IOException("Permission denied to write on Workspace folder : " + absolutePath);
-		}
-	}
-	
-	private void analyzeWorkspace() throws IOException{
-		File[] files = workspaceFolder.listFiles(fileNameFilter);
-		
-		if(files != null && files.length != 0){
-			processWorkspace(files);
-		}
-	}
-
-	private void processWorkspace(File[] files) throws IOException {
-		this.tables = new ArrayList<>();
-		
-		for (File file : files) {
-			Factory.getTableHeaderBlockBytes(file);
-			
-			Table table = new Table(file);
-			tables.add(table);
-		}
+		this.fileSystemManager = new FileSystemManager(workspaceFolder, fileNameFilter);
+		this.bufferManager = new BufferManager(fileSystemManager, bufferDataBlockSlots);
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -90,7 +60,7 @@ public class AbstractDbms
 	//XXX DELEGATE TABLE MANAGER METHODS
 	@Override
 	public Collection<ITable> getAllTables() {
-		return new ArrayList<>(tables);
+		return new ArrayList<>();
 	}
 
 	@Override

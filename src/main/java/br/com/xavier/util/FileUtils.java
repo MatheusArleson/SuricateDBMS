@@ -17,6 +17,10 @@ public class FileUtils {
 			throw new IOException("Path is a directory : " + absolutePath);
 		}
 		
+		if(!isDirectory && directoryExpected){
+			throw new IOException("Path is not a directory : " + absolutePath);
+		}
+		
 		if(writeMode && file.exists() && !file.canWrite()){
 			throw new IOException("Cannot write in : " + absolutePath);
 		}
