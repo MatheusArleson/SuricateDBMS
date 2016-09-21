@@ -7,9 +7,16 @@ import java.io.RandomAccessFile;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
+
+import br.com.xavier.suricate.dbms.enums.FileModes;
 import br.com.xavier.suricate.dbms.impl.table.Table;
+import br.com.xavier.suricate.dbms.impl.table.data.TableDataBlock;
+import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileSystemManager;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
+import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
+import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
 import br.com.xavier.util.FileUtils;
@@ -51,33 +58,102 @@ public abstract class AbstractFileSystemManager
 	}
 
 	@Override
-	public RandomAccessFile createFile(String fileAbsolutePath) {
-		// TODO Auto-generated method stub
-		return null;
+	public ITableDataBlock readDataBlock(IRowId rowId) throws IOException {
+		IRowId.validate(rowId);
+		
+		Byte tableId = rowId.getTableId();
+		ITable table = fetchTableFromWorkspace(tableId);
+		
+		Integer blockId = rowId.getBlockId().getValue();
+		validateBlockId(table, blockId);
+		
+		Integer blockSize = fetchBlockSize(table);
+		long startPosition = blockSize * blockId;
+		
+		byte[] dataBlockBytes = new byte[blockSize];
+		File tableFile = fetchTableFile(table);		
+		
+		RandomAccessFile raf = null;		
+		try {
+			raf = new RandomAccessFile(tableFile, FileModes.READ_ONLY.getMode());
+			
+			raf.seek(startPosition);
+			raf.readFully(dataBlockBytes);
+			
+			ITableDataBlock dataBlock = new TableDataBlock(dataBlockBytes);
+			return dataBlock;
+			
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			if(raf != null){
+				IOUtils.closeQuietly(raf);
+			}
+		}
 	}
 
 	@Override
-	public RandomAccessFile createFile(String fileAbsolutePath, byte[] fileContent) {
-		// TODO Auto-generated method stub
-		return null;
+	public void writeDataBlock(ITableDataBlock dataBlock) throws IOException {
+		Byte tableId = dataBlock.getHeader().getTableId();
+		ITable table = fetchTableFromWorkspace(tableId);
+		
+		Integer blockId = dataBlock.getHeader().getBlockId().getValue();
+		validateBlockId(table, blockId);
+		
+		byte[] dataBlockBytes = dataBlock.toByteArray();
+		File tableFile = fetchTableFile(table);
+		
+		Integer blockSize = fetchBlockSize(table);
+		long startPosition = blockSize  * blockId;
+		
+		RandomAccessFile raf = null;		
+		try {
+			raf = new RandomAccessFile(tableFile, FileModes.READ_WRITE_CONTENT_SYNC.getMode());
+			
+			raf.seek(startPosition);
+			raf.write(dataBlockBytes);
+			
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			if(raf != null){
+				IOUtils.closeQuietly(raf);
+			}
+		}
 	}
 
 	@Override
-	public byte[] readBlock(RandomAccessFile file, Long blockId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void writeBlock(RandomAccessFile file, Long blockId, byte[] content) {
+	public void deleteDataBlock(ITableDataBlock dataBlock) {
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void deleteBlock(RandomAccessFile file, Long blockId) {
-		// TODO Auto-generated method stub
-		
+	
+	//XXX PRIVATE METHODS
+	private ITable fetchTableFromWorkspace(Byte tableId) throws IOException {
+		ITable table = workspaceMap.get(tableId);
+		if(table == null){
+			throw new IOException("Table not exists for id: " + tableId);
+		}
+		return table;
+	}
+	
+	private File fetchTableFile(ITable table) {
+		return table.getFile();
+	}
+	
+	private Integer fetchBlockSize(ITable table){
+		return table.getHeaderBlock().getHeaderContent().getBlockSize().getValue();
+	}
+	
+	private Integer fetchNextFreeBlockId(ITable table){
+		return table.getHeaderBlock().getHeaderContent().getNextFreeBlockId();
+	}
+	
+	private void validateBlockId(ITable table, Integer blockId) throws IOException{
+		Integer nextFreeBlockId = fetchNextFreeBlockId(table);
+		if(blockId > nextFreeBlockId){
+			throw new IOException("Block not exists for id: " + blockId);
+		}
 	}
 
 }
