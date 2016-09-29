@@ -20,6 +20,9 @@ public interface ITableHeaderBlock
 	Collection<IColumnDescriptor> getColumnsDescriptors();
 	void setColumnsDescriptor(Collection<IColumnDescriptor> columnsDescriptors);
 	
+	Integer getRowSize();
+	Integer getNumberOfRowsPerBlock();
+	
 	@Override
 	default byte[] toByteArray() throws IOException {
 		ITableHeaderBlockContent headerContent = getHeaderContent();
@@ -49,22 +52,27 @@ public interface ITableHeaderBlock
 		byte[] headerContentBuffer = new byte[ITableHeaderBlockContent.BYTES_SIZE];
 		ByteBuffer bb = ByteBuffer.wrap(bytes);
 		bb.get(headerContentBuffer);
-		ITableHeaderBlockContent headerBlockContent = new TableHeaderBlockContent(headerContentBuffer);
 		
+		ITableHeaderBlockContent headerBlockContent = new TableHeaderBlockContent(headerContentBuffer);
 		setHeaderContent(headerBlockContent);
 		
-		Collection<IColumnDescriptor> columnsDescriptors = new ArrayList<>();
+		Short columnsDescriptorsSize = headerBlockContent.getHeaderSize();
+		if(bb.remaining() < columnsDescriptorsSize){
+			throw new IOException("Columns descriptors : Byte underflow : must be of lenght : " + columnsDescriptorsSize);
+		}
 		
 		int columnDescriptorByteSize = IColumnDescriptor.BYTES_SIZE;
-		while(bb.hasRemaining()){
-			if(bb.remaining() <  columnDescriptorByteSize){
-				break;
-			}
-			
-			byte[] columnDescriptorBuffer = new byte[columnDescriptorByteSize];
+		int descriptorsQtd = columnsDescriptorsSize / columnDescriptorByteSize;
+		byte[] columnDescriptorBuffer = new byte[columnDescriptorByteSize];
+		
+		Collection<IColumnDescriptor> columnsDescriptors = new ArrayList<>();
+		while(descriptorsQtd > 0){
 			bb.get(columnDescriptorBuffer);
+			
 			IColumnDescriptor columnDescriptor = new ColumnDescriptor(columnDescriptorBuffer);
 			columnsDescriptors.add(columnDescriptor);
+			
+			descriptorsQtd--;
 		}
 		
 		setColumnsDescriptor(columnsDescriptors);

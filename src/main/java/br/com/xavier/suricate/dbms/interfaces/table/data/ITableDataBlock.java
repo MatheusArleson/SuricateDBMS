@@ -9,6 +9,8 @@ import java.util.Objects;
 import br.com.xavier.suricate.dbms.impl.table.data.RowEntry;
 import br.com.xavier.suricate.dbms.impl.table.data.TableDataBlockHeader;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.ByteArrayUtils;
 import br.com.xavier.util.ObjectsUtils;
 
@@ -19,6 +21,8 @@ public interface ITableDataBlock
 	void setHeader(ITableDataBlockHeader header);
 	Collection<IRowEntry> getRows();
 	void setRows(Collection<IRowEntry> rows);
+	
+	String printData(Collection<IColumnDescriptor> columnsDescriptors, ITextSeparators separators);
 	
 	@Override
 	default byte[] toByteArray() throws IOException {
@@ -34,6 +38,7 @@ public interface ITableDataBlock
 		byte[] rowsBytes = ByteArrayUtils.toByteArray(rows);
 		
 		byte[] byteArray = ByteArrayUtils.toByteArray(headerBytes, rowsBytes);
+		
 		return byteArray;
 	}
 	
@@ -53,18 +58,28 @@ public interface ITableDataBlock
 		ITableDataBlockHeader tableDataBlockHeader = new TableDataBlockHeader(tableDataBlockHeaderBuffer);
 		setHeader(tableDataBlockHeader);
 		
+		Integer bytesUsedInBlock = tableDataBlockHeader.getBytesUsedInBlock().getValue();
+		if(bb.remaining() < bytesUsedInBlock){
+			throw new IOException("Row entries : Byte underflow : must be of lenght : " + bytesUsedInBlock);
+		}
+		
+		byte[] rowEntriesBytes = new byte[bytesUsedInBlock];
+		bb.get(rowEntriesBytes);
+		
+		ByteBuffer rowsEntriesBuffer = ByteBuffer.wrap(rowEntriesBytes);
 		Collection<IRowEntry> rowEntries = new ArrayList<>();
-		while(bb.hasRemaining()){
-			Integer rowSize = bb.getInt();
+		while(rowsEntriesBuffer.hasRemaining()){
+			Integer rowSize = rowsEntriesBuffer.getInt();
 			Integer rowEntrySize = Integer.BYTES + rowSize;
 			byte[] rowEntryBuffer = new byte[rowEntrySize];
 			
-			bb.position(bb.position() - Integer.BYTES);
-			bb.get(rowEntryBuffer);
+			rowsEntriesBuffer.position(rowsEntriesBuffer.position() - Integer.BYTES);
+			rowsEntriesBuffer.get(rowEntryBuffer);
 			
 			IRowEntry rowEntry = new RowEntry(rowEntryBuffer);
 			rowEntries.add(rowEntry);
 		}
+		
 		setRows(rowEntries);
 	}
 	

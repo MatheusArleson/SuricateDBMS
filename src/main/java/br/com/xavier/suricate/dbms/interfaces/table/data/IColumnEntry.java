@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.ObjectsUtils;
 
 public interface IColumnEntry
@@ -16,6 +18,7 @@ public interface IColumnEntry
 	Short getContentSize();
 	byte[] getContent();
 	void setContent(byte[] content);
+	String printData(IColumnDescriptor descriptor, ITextSeparators separator);
 	
 	@Override
 	default byte[] toByteArray() throws IOException {

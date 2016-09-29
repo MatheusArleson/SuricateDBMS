@@ -3,13 +3,18 @@ package br.com.xavier.suricate.dbms;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 
+import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 import br.com.xavier.suricate.dbms.enums.FileModes;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
+import br.com.xavier.suricate.dbms.impl.table.data.ColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.ByteArrayUtils;
 
 public final class Factory {
@@ -63,4 +68,49 @@ public final class Factory {
 		return tbv;
 	}
 	
+	//XXX PADDING METHODS
+	public static byte[] leftPad(byte[] bytes, int size){
+		return ByteArrayUtils.leftPad(bytes, size);
+	}
+
+	//XXX COLUMN DESCRIPTOR METHODS
+	public static String getAsString(IColumnDescriptor columnDescriptor, byte[] content) {
+		ColumnsTypes columnType = columnDescriptor.getType();
+		switch (columnType) {
+		case INTEGER:
+			ByteBuffer bb = ByteBuffer.allocateDirect(4).put(content);
+			Integer value = bb.getInt();
+			return String.valueOf(value);
+		case STRING:
+			return Factory.fromByteArray(content);
+		default:
+			throw new IllegalArgumentException("UNKNOW COLUMN TYPE");
+		}
+	}
+	
+	public static byte[] getAsBytes(IColumnDescriptor columnDescriptor, String data) {
+		ColumnsTypes columnType = columnDescriptor.getType();
+		switch (columnType) {
+		case INTEGER:
+			Integer value =  Integer.valueOf(data);
+			ByteBuffer bb = ByteBuffer.allocate(Integer.BYTES);
+			bb.putInt(value);
+			return bb.array();
+		case STRING:
+			return Factory.toByteArray(data);
+		default:
+			throw new IllegalArgumentException("UNKNOW COLUMN TYPE");
+		}
+	}
+
+	//XXX COLUMN ENTRY METHODS
+	public static IColumnEntry toColumnEntry(byte[] data) throws IOException{
+		Integer dataSizeInt = data.length;
+		ByteBuffer bb = ByteBuffer.allocate(Short.BYTES + dataSizeInt);
+		bb.putShort(dataSizeInt.shortValue());
+		bb.put(data);
+		
+		IColumnEntry columnEntry = new ColumnEntry(bb.array());
+		return columnEntry;
+	}
 }

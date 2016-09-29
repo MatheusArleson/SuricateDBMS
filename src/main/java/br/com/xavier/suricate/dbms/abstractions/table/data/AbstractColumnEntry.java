@@ -3,9 +3,12 @@ package br.com.xavier.suricate.dbms.abstractions.table.data;
 import java.io.IOException;
 import java.util.Arrays;
 
+import br.com.xavier.suricate.dbms.Factory;
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 
-public class AbstractColumnEntry
+public abstract class AbstractColumnEntry
 		implements IColumnEntry {
 
 	private static final long serialVersionUID = -5978555259748724952L;
@@ -59,6 +62,20 @@ public class AbstractColumnEntry
 		+ "]";
 	}
 
+	@Override
+	public String printData(IColumnDescriptor descriptor, ITextSeparators separators) {
+		if(separators == null){
+			throw new IllegalArgumentException("Null separators.");
+		}
+		
+		if(descriptor == null){
+			throw new IllegalArgumentException("Null Column Descriptor.");
+		}
+		
+		String valueStr = Factory.getAsString(descriptor, content);
+		return valueStr + separators.getColumnsSeparator();
+	}
+	
 	//XXX GETTERS/SETTERS
 	@Override
 	public byte[] getContent() {

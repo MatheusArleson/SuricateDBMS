@@ -7,6 +7,8 @@ import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 public interface IRowId
 		extends Serializable {
 	
+	Long FULL_BYTE_OFFSET = -1L;
+	
 	Byte getTableId();
 	void setTableId(Byte tableId);
 	IThreeByteValue getBlockId();

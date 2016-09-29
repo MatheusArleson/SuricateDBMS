@@ -29,16 +29,20 @@ public class AbstractTable
 	private Collection<ITableDataBlock> dataBlocks;
 	
 	//XXX CONSTRUCTORS
+	public AbstractTable(ITableHeaderBlock headerBlock, Collection<ITableDataBlock> dataBlocks) throws IOException {
+		setHeaderBlock(headerBlock);
+		setDataBlocks(dataBlocks);
+		setLazyLoadDataBlocks(true);
+	}
+	
 	public AbstractTable(File file) throws IOException {
 		this(file, true);
 	}
 	
 	public AbstractTable(File file, boolean lazyLoadDataBlocks) throws IOException {
 		super();
-		setFile(file);
 		setLazyLoadDataBlocks(lazyLoadDataBlocks);
-		
-		initialize();
+		setFile(file);
 	}
 	
 	private void initialize() throws IOException {
@@ -58,7 +62,8 @@ public class AbstractTable
 		if(lazyLoadDataBlocks){
 			return;
 		} else {
-			
+			//XXX TODO FIXME FINISH METHOD
+			throw new IllegalAccessError("Not implemented yet..");
 		}
 	}
 
@@ -119,7 +124,6 @@ public class AbstractTable
 	public File getFile() {
 		return file;
 	}
-	
 
 	@Override
 	public void setFile(File file) throws IOException {

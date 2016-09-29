@@ -1,12 +1,11 @@
 package br.com.xavier.suricate.dbms.abstractions.table.header;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import br.com.xavier.suricate.dbms.impl.table.header.ColumnDescriptor;
-import br.com.xavier.suricate.dbms.impl.table.header.TableHeaderBlockContent;
+import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
+import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
@@ -28,37 +27,17 @@ public abstract class AbstractTableHeaderBlock
 	
 	public AbstractTableHeaderBlock(ITableHeaderBlockContent headerContent,	Collection<IColumnDescriptor> columnsDescriptors) {
 		super();
-		this.headerContent = headerContent;
-		this.columnsDescriptors = columnsDescriptors;
+		setHeaderContent(headerContent);
+		setColumnsDescriptor(columnsDescriptors);
 	}
 	
 	public AbstractTableHeaderBlock(byte[] bytes) throws IOException {
-		super();
-		this.headerContent = generateTableHeaderContent(bytes);
-		this.columnsDescriptors = generateColumnsDescriptors(bytes);
-	}
-
-	private TableHeaderBlockContent generateTableHeaderContent(byte[] bytes) throws IOException {
-		return new TableHeaderBlockContent(bytes);
-	}
-	
-	private Collection<IColumnDescriptor> generateColumnsDescriptors(byte[] bytes) throws IOException {		
-		ArrayList<IColumnDescriptor> columnsDescriptors = new ArrayList<>();
-		try{
-			ByteBuffer bb = ByteBuffer.wrap(bytes);
-			bb.position(ITableHeaderBlockContent.BYTES_SIZE);
-			
-			byte[] buffer = new byte[IColumnDescriptor.BYTES_SIZE];
-			while(bb.hasRemaining()){
-				bb.get(buffer);
-				IColumnDescriptor columnDesc = new ColumnDescriptor(buffer);
-				columnsDescriptors.add(columnDesc);
-			}
-			
-			return columnsDescriptors;
-			
-		} catch(Exception e){
-			throw new IOException("Error while parsing columns descriptors.", e);
+		try {
+			fromByteArray(bytes);
+		} catch(IOException e){
+			throw e;
+		} catch(IllegalArgumentException e){
+			throw new IOException("Illegal value detected.", e);
 		}
 	}
 
@@ -93,6 +72,45 @@ public abstract class AbstractTableHeaderBlock
 		return "AbstractTableHeaderBlock [" 
 			+ "headerContent=" + headerContent
 		+ "]";
+	}
+	
+	@Override
+	public Integer getRowSize() {
+		if(columnsDescriptors == null || columnsDescriptors.isEmpty()){
+			return null;
+		}
+		
+		int rowSize = 0;
+		for (IColumnDescriptor columnDescriptor : columnsDescriptors) {
+			ColumnsTypes columnType = columnDescriptor.getType();
+			switch (columnType) {
+			case INTEGER:
+				rowSize = rowSize + Integer.BYTES;
+				break;
+			case STRING:
+				rowSize = rowSize + (2 * columnDescriptor.getSize());
+				break;
+			default:
+				throw new IllegalArgumentException("Unknow column type.");
+			}
+		}
+		
+		return rowSize;
+	}
+	
+	@Override
+	public Integer getNumberOfRowsPerBlock() {
+		ITableHeaderBlockContent headerContent = getHeaderContent();
+		if(headerContent == null){
+			return null;
+		}
+		
+		Integer blockSize = headerContent.getBlockSize().getValue();
+		Integer dataBlockHeaderBytesSize = ITableDataBlockHeader.BYTES_SIZE;
+		Integer rowSize = getRowSize();
+		
+		Integer numberOfRowPerBlock = (blockSize - dataBlockHeaderBytesSize) / rowSize;
+		return numberOfRowPerBlock;
 	}
 	
 	//XXX GETTERS/SETTERS
@@ -140,6 +158,11 @@ public abstract class AbstractTableHeaderBlock
 		
 		this.columnsDescriptors.clear();
 		this.columnsDescriptors.addAll(columnsDescriptors);
+		
+		Integer rowsPerBlock = getNumberOfRowsPerBlock();
+		if(rowsPerBlock < 1){
+			throw new IllegalArgumentException("Invalid block size : each block must contain at least one row.");
+		}
 	}
 
 }

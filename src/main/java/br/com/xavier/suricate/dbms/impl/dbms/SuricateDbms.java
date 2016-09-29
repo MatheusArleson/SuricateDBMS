@@ -11,10 +11,10 @@ public class SuricateDbms
 
 	private static final long serialVersionUID = 8305216838403911711L;
 
-	private static final String SURICATE_FILE_SUFFIX = ".suricate";
+	private static final String SURICATE_FILE_SUFFIX = ".suricata";
 	
-	public SuricateDbms(File workspaceFolder) throws IOException {
-		super(new FileNameFilter(SURICATE_FILE_SUFFIX), workspaceFolder);
+	public SuricateDbms(File workspaceFolder, int bufferDataBlockSlots) throws IOException {
+		super(workspaceFolder, new FileNameFilter(SURICATE_FILE_SUFFIX), bufferDataBlockSlots);
 	}
 
 }

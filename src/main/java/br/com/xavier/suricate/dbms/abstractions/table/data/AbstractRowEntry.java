@@ -3,12 +3,16 @@ package br.com.xavier.suricate.dbms.abstractions.table.data;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.stream.IntStream;
 
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.ObjectsUtils;
 
-public class AbstractRowEntry 
+public abstract class AbstractRowEntry 
 		implements IRowEntry {
 
 	private static final long serialVersionUID = -4174089309741988414L;
@@ -68,6 +72,40 @@ public class AbstractRowEntry
 			+ "size=" + size 
 			+ ", columnsEntries=" + columnsEntries 
 		+ "]";
+	}
+	
+	@Override
+	public String printData(Collection<IColumnDescriptor> columnsDescriptors, ITextSeparators separators) {
+		if(separators == null){
+			throw new IllegalArgumentException("Null separators.");
+		}
+		
+		if(columnsDescriptors == null || columnsDescriptors.isEmpty()){
+			throw new IllegalArgumentException("Null columns descriptors.");
+		}
+		
+		if(columnsEntries == null || columnsEntries.isEmpty()){
+			return "";
+		}
+		
+		int descriptorsSize = columnsDescriptors.size();
+		if(descriptorsSize != columnsEntries.size()){
+			throw new IllegalArgumentException("Columns descriptors must be of same size than columns entries");
+		}
+		
+		Iterator<IColumnDescriptor> descriptorsIterator = columnsDescriptors.iterator();
+		Iterator<IColumnEntry> columnsIterator = columnsEntries.iterator();
+		
+		StringBuffer sb = new StringBuffer();
+		IntStream.range(0, descriptorsSize).forEach(idx -> {
+			IColumnDescriptor descriptor = descriptorsIterator.next();
+			IColumnEntry column = columnsIterator.next();
+			String columnInfo = column.printData(descriptor, separators);
+			sb.append(columnInfo);
+		});
+		
+		sb.append(separators.getEndLineSeparator());
+		return sb.toString();
 	}
 	
 	//XXX GETTERS/SETTERS

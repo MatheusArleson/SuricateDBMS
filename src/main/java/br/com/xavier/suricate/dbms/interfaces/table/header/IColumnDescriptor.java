@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import br.com.xavier.suricate.dbms.Factory;
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.util.ObjectsUtils;
 import br.com.xavier.util.StringUtils;
 
@@ -22,6 +23,8 @@ public interface IColumnDescriptor
 	Short getSize();
 	void setSize(Short size);
 
+	String printData(ITextSeparators separators);
+	
 	@Override
 	default byte[] toByteArray() throws IOException {
 		ByteBuffer bb = ByteBuffer.allocate(64);
@@ -87,4 +90,5 @@ public interface IColumnDescriptor
 			throw new IOException("Error while parsing bytes.", e);
 		}
 	}
+	
 }

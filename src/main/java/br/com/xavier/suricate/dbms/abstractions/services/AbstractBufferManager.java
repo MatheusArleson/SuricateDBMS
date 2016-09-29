@@ -1,17 +1,22 @@
 package br.com.xavier.suricate.dbms.abstractions.services;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.services.IBufferManager;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileSystemManager;
+import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
+import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlock;
+import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
 
-public class AbstractBufferManager
+public abstract class AbstractBufferManager
 		implements IBufferManager {
 	
 	//XXX DEPENDENCIES PROPERTIES
@@ -52,6 +57,28 @@ public class AbstractBufferManager
 		
 		swapIn(dataBlock);
 		return dataBlock;
+	}
+	
+	@Override
+	public void purge(ITable table) {
+		if(table == null){
+			return;
+		}
+		
+		if(isBufferDequeEmpty()){
+			return;
+		}
+		
+		ITableHeaderBlock headerBlock = table.getHeaderBlock();
+		ITableHeaderBlockContent headerContent = headerBlock.getHeaderContent();
+		Byte tableId = headerContent.getTableId();
+		
+		Collection<ITableDataBlock> toRemove = bufferDeque.stream()
+			.filter(db -> db.getHeader().getTableId().equals(tableId))
+			.collect(Collectors.toCollection(LinkedList::new));
+		
+		bufferDeque.removeAll(toRemove);
+		slotsFilled = slotsFilled - toRemove.size();
 	}
 	
 	@Override

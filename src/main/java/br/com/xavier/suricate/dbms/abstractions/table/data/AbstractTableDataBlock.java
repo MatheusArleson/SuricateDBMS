@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.ObjectsUtils;
 
 public abstract class AbstractTableDataBlock
@@ -72,6 +74,29 @@ public abstract class AbstractTableDataBlock
 		+ "]";
 	}
 
+	@Override
+	public String printData(Collection<IColumnDescriptor> columnsDescriptors, ITextSeparators separators) {
+		if(separators == null){
+			throw new IllegalArgumentException("Null separators.");
+		}
+		
+		if(columnsDescriptors == null || columnsDescriptors.isEmpty()){
+			throw new IllegalArgumentException("Null columns descriptors.");
+		}
+		
+		if(rows == null || rows.isEmpty()){
+			return "";
+		}
+
+		StringBuffer sb = new StringBuffer();
+		for (IRowEntry row : rows) {
+			String rowInfo = row.printData(columnsDescriptors, separators);
+			sb.append(rowInfo);
+		}
+		
+		return sb.toString();
+	}
+	
 	//XXX GETTERS/SETTERS
 	@Override
 	public ITableDataBlockHeader getHeader() {

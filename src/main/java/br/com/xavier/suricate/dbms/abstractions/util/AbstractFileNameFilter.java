@@ -1,11 +1,12 @@
 package br.com.xavier.suricate.dbms.abstractions.util;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.Serializable;
 
+import br.com.xavier.suricate.dbms.interfaces.services.IFileNameFilter;
+
 public abstract class AbstractFileNameFilter 
-		implements FilenameFilter, Serializable {
+		implements IFileNameFilter, Serializable {
 	
 	private static final long serialVersionUID = -5202676092186769122L;
 	

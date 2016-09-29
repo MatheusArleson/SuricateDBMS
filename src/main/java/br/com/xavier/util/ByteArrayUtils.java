@@ -2,6 +2,7 @@ package br.com.xavier.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
@@ -69,4 +70,24 @@ public final class ByteArrayUtils {
 		return new String(strBytes, charset);
 	}
 
+	public static byte[] leftPad(byte[] bytes, int size){
+		
+		if(bytes == null){
+			return null;
+		}
+		
+		if(size < 0){
+			throw new IllegalArgumentException("Size must be a positive integer.");
+		}
+		
+		if(bytes.length > size){
+			throw new IllegalArgumentException("Byte array size must be less or equal padding size.");
+		}
+		
+		ByteBuffer bb = ByteBuffer.allocate(size);
+		bb.put(bytes);
+		byte[] array = bb.array();
+		return array;
+	}
+	
 }

@@ -7,6 +7,8 @@ import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.impl.table.data.ColumnEntry;
 import br.com.xavier.suricate.dbms.interfaces.low.IBinarizable;
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
+import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.ByteArrayUtils;
 import br.com.xavier.util.ObjectsUtils;
 
@@ -19,6 +21,7 @@ public interface IRowEntry
 	Integer getColumnsEntrySize();
 	Collection<IColumnEntry> getColumnsEntries();
 	void setColumnsEntries(Collection<IColumnEntry> columnsEntries);
+	String printData(Collection<IColumnDescriptor> columnsDescriptors, ITextSeparators separators);
 	
 	@Override
 	default byte[] toByteArray() throws IOException {

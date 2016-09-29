@@ -3,6 +3,7 @@ package br.com.xavier.suricate.dbms.abstractions.table.header;
 import java.io.IOException;
 
 import br.com.xavier.suricate.dbms.enums.ColumnsTypes;
+import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.util.StringUtils;
 
@@ -77,6 +78,24 @@ public abstract class AbstractColumnDescriptor
 		+ "]";
 	}
 
+	@Override
+	public String printData(ITextSeparators separators) {
+		if(separators == null){
+			throw new IllegalArgumentException("Null separators.");
+		}
+		
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(getName());
+		sb.append(separators.getNameMetadataSeparator());
+		sb.append(getType());
+		sb.append(separators.getTypeSizeSeparator());
+		sb.append(getSize());
+		sb.append(separators.getColumnsSeparator());
+		
+		return sb.toString();
+	}
+	
 	//XXX GETTERS/SETTERS
 	@Override
 	public String getName() {
