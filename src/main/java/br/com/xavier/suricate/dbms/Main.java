@@ -3,7 +3,12 @@ package br.com.xavier.suricate.dbms;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -15,6 +20,7 @@ import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
+import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 
 public final class Main {
 
@@ -30,14 +36,14 @@ public final class Main {
 		String endLineSeparator = new String("\n");
 		ITextSeparators separators = new TextSeparators(columnsSeparator, nameMetadataSeparator, typeSizeSeparator, endLineSeparator);
 		
-		String[] filePaths = new String[] {"file_samples/file_sample.txt", "file_samples/file_sample2.txt", "file_samples/file_sample3.txt", "file_samples/forn-tpch.txt", "file_samples/cli-tpch.txt"};
+		String[] filePaths = new String[] {/*"file_samples/file_sample.txt", "file_samples/file_sample2.txt", "file_samples/file_sample3.txt",*/ "file_samples/forn-tpch.txt"/* , "file_samples/cli-tpch.txt"*/};
 		Charset charset = StandardCharsets.UTF_8;
 		IThreeByteValue blockSize = new BigEndianThreeBytesValue(4096);
 		
 		File workspaceFolder = new File("db_workspace");
-		int bufferDataBlockSlots = 10;
+		int bufferDataBlockSlots = 50;
 		
-		File outputFile = new File("output.txt");
+		File outputFile = new File(workspaceFolder, "output.txt");
 		System.out.println("#> SURICATE DB > PARAMETERS INITIALIZED > " + new Date());
 		
 		System.out.println("#> SURICATE DB > INITIALIZING WORKSPACE > " + new Date());
@@ -73,9 +79,41 @@ public final class Main {
 		FileUtils.writeStringToFile(outputFile, dataStr, charset);
 		System.out.println("#> SURICATE DB > END OF OUTPUT TABLES DATA > " + new Date());
 		
+		printBufferStatistics(dbms);
+		
+		System.out.println("#> SURICATE DB > FETCHING ALL ROW IDS > " + new Date());
+		Collection<ITable> allTables = dbms.getAllTables();
+		List<IRowId> allRowIds = new LinkedList<>();
+		for (ITable table : allTables) {
+			Collection<IRowId> tableRowIds = dbms.getRowIds(table);
+			allRowIds.addAll(tableRowIds);
+		}
+		System.out.println("#> SURICATE DB > FINISHED FETCH ALL ROW IDS > " + new Date());
+		
+		System.out.println("#> SURICATE DB > SHUFFLING ALL ROW IDS > " + new Date());
+		shuffle(allRowIds);
+		System.out.println("#> SURICATE DB > FINISHED SHUFFLE ALL ROW IDS > " + new Date());
+		
+		System.out.println("#> SURICATE DB > ACCESSING SHUFFLED ROW IDS > " + new Date());
+		for (IRowId rowId : allRowIds) {
+			System.out.println("###> ACCESSING ROW ID > " + rowId.getTableId() + "." + rowId.getBlockId().getValue() + "." + rowId.getByteOffset());
+			dbms.getDataBlock(rowId);
+		}
+		System.out.println("#> SURICATE DB > END OF ACCESS OF SHUFFLED ROW IDS > " + new Date());
+		
+		printBufferStatistics(dbms);
+		
+	}
+
+	private static void shuffle(List<IRowId> allRowIds) {
+		long seed = System.nanoTime();
+		Random rng = new Random(seed);
+		Collections.shuffle(allRowIds, rng);
+	}
+
+	private static void printBufferStatistics(IDbms dbms) {
 		System.out.println("#> SURICATE DB > BUFFER STATISTICS > " + new Date());
-		String bufferStatistics = dbms.getBufferStatistics();
-		System.out.println(bufferStatistics);
+		System.out.println( dbms.getBufferStatistics() );
 		System.out.println("#> SURICATE DB > END OF BUFFER STATISTICS > " + new Date());
 	}
 	

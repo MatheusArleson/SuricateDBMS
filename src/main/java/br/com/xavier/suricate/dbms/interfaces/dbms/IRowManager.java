@@ -17,4 +17,6 @@ public interface IRowManager
 	IRowEntry getRow(IRowId rowId);
 	void deleteRow(IRowId rowId);
 	
+	Collection<IRowId> getRowIds(ITable table) throws IOException;
+	
 }

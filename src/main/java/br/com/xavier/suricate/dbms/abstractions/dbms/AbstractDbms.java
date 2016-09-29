@@ -27,6 +27,7 @@ import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
+import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
 
@@ -120,15 +121,7 @@ public abstract class AbstractDbms
 		return sb.toString();
 	}
 	
-	//XXX ROW MANAGER METHODS
-	@Override
-	public Long getRowCount(ITable table) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<IRowEntry> getAllRows(ITable table) throws IOException {
+	public Collection<ITableDataBlock> getAllDataBlocks(ITable table) throws IOException {
 		ITableHeaderBlockContent headerContent = table.getHeaderBlock().getHeaderContent();
 		Integer nextFreeBlockId = headerContent.getNextFreeBlockId();
 		if(nextFreeBlockId.equals(0)){
@@ -140,16 +133,81 @@ public abstract class AbstractDbms
 		Byte tableId = headerContent.getTableId();
 		Long byteOffset = IRowId.FULL_BYTE_OFFSET;
 		
-		Collection<IRowEntry> rowsBuffer = new LinkedList<>();
+		Collection<ITableDataBlock> dataBlocks = new LinkedList<>();
 		for (Integer id : blockIds) {
 			IThreeByteValue blockId = new BigEndianThreeBytesValue(id);
 			IRowId rowId = new RowId(tableId, blockId, byteOffset);
+			
 			ITableDataBlock dataBlock = bufferManager.getDataBlock(rowId);
+			dataBlocks.add(dataBlock);
+		}
+		
+		return dataBlocks;
+	}
+	
+	//XXX ROW MANAGER METHODS
+	@Override
+	public Long getRowCount(ITable table) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<IRowEntry> getAllRows(ITable table) throws IOException {
+		if(table == null){
+			return null;
+		}
+		
+		Collection<ITableDataBlock> dataBlocks = getAllDataBlocks(table);
+		
+		Collection<IRowEntry> rowsBuffer = new LinkedList<>();
+		for (ITableDataBlock dataBlock : dataBlocks) {
 			Collection<IRowEntry> rows = dataBlock.getRows();
 			rowsBuffer.addAll(rows);
 		}
 		
 		return rowsBuffer;
+	}
+	
+	@Override
+	public Collection<IRowId> getRowIds(ITable table) throws IOException {
+		if(table == null){
+			return null;
+		}
+		
+		ITableHeaderBlockContent headerContent = table.getHeaderBlock().getHeaderContent();
+		Byte tableId = headerContent.getTableId();
+		Integer blockSize = headerContent.getBlockSize().getValue();
+		
+		Collection<IRowId> rowIds = new LinkedList<>();
+		Collection<ITableDataBlock> dataBlocks = getAllDataBlocks(table);
+		for (ITableDataBlock dataBlock : dataBlocks) {
+			IThreeByteValue blockId = dataBlock.getHeader().getBlockId();
+			
+			Collection<IRowEntry> rows = dataBlock.getRows();
+			Long offset = new Long(blockSize + ITableDataBlockHeader.BYTES_SIZE);
+			for (IRowEntry row : rows) {
+				IRowId rowId = new RowId(tableId, blockId, offset);
+				rowIds.add(rowId);
+				
+				Integer rowSize = row.getColumnsEntrySize();
+				offset = offset + rowSize;
+			}
+		}
+		
+		return rowIds;
+	}
+	
+	@Override
+	public ITableDataBlock getDataBlock(IRowId rowId) throws IOException {
+		IRowId.validate(rowId);
+		return bufferManager.getDataBlock(rowId);
+	}
+	
+	@Override
+	public IRowEntry getRow(IRowId rowId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -158,12 +216,7 @@ public abstract class AbstractDbms
 		
 	}
 
-	@Override
-	public IRowEntry getRow(IRowId rowId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	@Override
 	public void deleteRow(IRowId rowId) {
 		// TODO Auto-generated method stub
