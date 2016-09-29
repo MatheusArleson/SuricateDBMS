@@ -37,7 +37,7 @@ public abstract class AbstractFileSystemManager
 	private File workspaceFolder;
 	private IFileNameFilter fileNameFilter;
 	
-	private Byte nextTableId = 0;
+	private Byte nextTableId = 1;
 	private Map<Byte, ITable> workspaceMap;
 	
 	private IFileParser fileParser; 
@@ -205,6 +205,11 @@ public abstract class AbstractFileSystemManager
 		}
 	}
 
+	@Override
+	public void shutdown() {
+		
+	}
+	
 	//XXX PRIVATE METHODS
 	private void addTableToWorkspaceMap(ITable table) throws IOException {
 		ITableHeaderBlock headerBlock = table.getHeaderBlock();
@@ -216,7 +221,7 @@ public abstract class AbstractFileSystemManager
 			throw new IOException("Invalid workspace : Table ID must be unique : Id : " + tableId);
 		}
 		
-		if(tableId > nextTableId){
+		if(tableId >= nextTableId){
 			nextTableId = (byte) (tableId + 1);
 		}
 	}
@@ -239,7 +244,7 @@ public abstract class AbstractFileSystemManager
 	private ITable fetchTableByFile(File file) {
 		return workspaceMap.entrySet()
 				.parallelStream()
-				.filter( e -> FilenameUtils.getBaseName( e.getValue().getFile().getName() ).equals( file.getName() ) )
+				.filter( e -> FilenameUtils.getBaseName( e.getValue().getFile().getName() ).equals( FilenameUtils.getBaseName(file.getName()) ) )
 				.map(Map.Entry::getValue)
 				.findFirst()
 				.orElse(null);

@@ -11,5 +11,6 @@ public interface IBufferManager {
 	ITableDataBlock getDataBlock(IRowId rowId) throws IOException;
 	void purge(ITable table);
 	void flush() throws IOException;
+	void shutdown();
 
 }

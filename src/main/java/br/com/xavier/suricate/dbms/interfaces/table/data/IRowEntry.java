@@ -70,9 +70,9 @@ public interface IRowEntry
 			Collection<IColumnEntry> columnEntries = new ArrayList<>();
 			while(bb.hasRemaining()){
 				Short contentSize = bb.getShort();
-				bb.position(bb.position() - Short.BYTES);
-				
 				byte[] contentBuffer = new byte[Short.BYTES + contentSize];
+				
+				bb.position(bb.position() - Short.BYTES);
 				bb.get(contentBuffer);
 				
 				IColumnEntry columnEntry = new ColumnEntry(contentBuffer);

@@ -79,6 +79,7 @@ public final class Factory {
 		switch (columnType) {
 		case INTEGER:
 			ByteBuffer bb = ByteBuffer.allocateDirect(4).put(content);
+			bb.rewind();
 			Integer value = bb.getInt();
 			return String.valueOf(value);
 		case STRING:

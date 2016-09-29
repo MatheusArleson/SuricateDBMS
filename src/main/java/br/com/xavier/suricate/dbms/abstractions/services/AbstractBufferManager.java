@@ -88,6 +88,15 @@ public abstract class AbstractBufferManager
 		}
 	}
 
+	@Override
+	public void shutdown() {
+		try {
+			flush();
+		} catch (Exception e) {
+			//TODO FIXME log exception....
+		}
+	}
+	
 	//XXX PRIVATE METHODS
 	private ITableDataBlock isBlockInMemory(IRowId rowId) {
 		boolean isBufferEmpty = isBufferDequeEmpty();

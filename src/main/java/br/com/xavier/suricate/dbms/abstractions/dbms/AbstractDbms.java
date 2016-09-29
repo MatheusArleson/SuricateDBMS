@@ -69,6 +69,16 @@ public class AbstractDbms
 		initialize();
 	}
 
+	@Override
+	public void shutdown() {
+		try {
+			bufferManager.shutdown();
+			fileSystemManager.shutdown();
+		}catch (Exception e) {
+			//TODO FIXME log exception...
+		}
+	}
+	
 	//XXX TABLE MANAGER METHODS
 	@Override
 	public Collection<ITable> getAllTables() {

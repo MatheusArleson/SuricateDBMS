@@ -1,6 +1,7 @@
 package br.com.xavier.suricate.dbms.interfaces.table.data;
 
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,7 +70,17 @@ public interface ITableDataBlock
 		ByteBuffer rowsEntriesBuffer = ByteBuffer.wrap(rowEntriesBytes);
 		Collection<IRowEntry> rowEntries = new ArrayList<>();
 		while(rowsEntriesBuffer.hasRemaining()){
-			Integer rowSize = rowsEntriesBuffer.getInt();
+			Integer rowSize = null;
+			try {
+				rowSize = rowsEntriesBuffer.getInt();
+			} catch (BufferUnderflowException e) {
+				break;
+			}
+			
+			if(rowSize.equals(0)){
+				break;
+			}
+			
 			Integer rowEntrySize = Integer.BYTES + rowSize;
 			byte[] rowEntryBuffer = new byte[rowEntrySize];
 			

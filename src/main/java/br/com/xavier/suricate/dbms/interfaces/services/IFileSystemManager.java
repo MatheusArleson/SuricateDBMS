@@ -14,6 +14,8 @@ import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 public interface IFileSystemManager
 		extends Serializable {
 	
+	void shutdown();
+	
 	Collection<ITable> getAllTables();
 	void removeTable(ITable table) throws IOException;
 	ITable importFile(File file, Charset charset, ITextSeparators separators, IThreeByteValue blockSize) throws IOException;

@@ -9,5 +9,6 @@ public interface IDbms
 	
 	File getWorkspace() throws IOException;
 	void setWorkspace(File workspaceFolder) throws IOException;
+	void shutdown();
 
 }

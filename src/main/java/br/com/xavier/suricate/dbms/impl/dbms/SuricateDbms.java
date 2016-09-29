@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import br.com.xavier.suricate.dbms.abstractions.dbms.AbstractDbms;
-import br.com.xavier.suricate.dbms.impl.util.FileNameFilter;
+import br.com.xavier.suricate.dbms.impl.services.FileNameFilter;
 
 public class SuricateDbms 
 		extends AbstractDbms {
