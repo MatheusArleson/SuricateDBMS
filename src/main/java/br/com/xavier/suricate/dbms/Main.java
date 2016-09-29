@@ -1,8 +1,10 @@
 package br.com.xavier.suricate.dbms;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -24,97 +26,109 @@ import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 
 public final class Main {
 
+	private static File workspaceFolder = new File("db_workspace");
+	private static IThreeByteValue blockSize = new BigEndianThreeBytesValue(4096);
+	private static Integer bufferDataBlockSlots = 3000;
+	
+	private static File outputDataFile = new File(workspaceFolder, "outputData.txt");
+	private static File outputLogFile = new File(workspaceFolder, "outputLog.log");
+	
+	private static String columnsSeparator = new String("|");
+	private static String nameMetadataSeparator = new String("%");
+	private static String typeSizeSeparator = new String("#");
+	private static String endLineSeparator = new String("\n");
+	
+	private static String[] filesPaths = new String[] {"file_samples/forn-tpch.txt" , "file_samples/cli-tpch.txt"/*, "file_samples/file_sample.txt", "file_samples/file_sample2.txt", "file_samples/file_sample3.txt"*/};
+	private static Charset filesCharset = StandardCharsets.UTF_8;
+	
+	private static String timeStampPattern = "dd/MM/yyyy HH:mm:ss.SSS";
+	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(timeStampPattern);
+	
 	//XXX CONSTRUCTOR
 	private Main() {}
 	
 	//XXX MAIN METHOD
 	public static void main(String[] args) throws Exception {
-		System.out.println("#> SURICATE DB > INITIALIZING PARAMETERS... > " + new Date());
-		String columnsSeparator = new String("|");
-		String nameMetadataSeparator = new String("%");
-		String typeSizeSeparator = new String("#");
-		String endLineSeparator = new String("\n");
+		sysoAndLog("#> SURICATE DB > INITIALIZING PARAMETERS... > ");
 		ITextSeparators separators = new TextSeparators(columnsSeparator, nameMetadataSeparator, typeSizeSeparator, endLineSeparator);
+		sysoAndLog("#> SURICATE DB > PARAMETERS INITIALIZED > ");
 		
-		String[] filePaths = new String[] {/*"file_samples/file_sample.txt", "file_samples/file_sample2.txt", "file_samples/file_sample3.txt",*/ "file_samples/forn-tpch.txt"/* , "file_samples/cli-tpch.txt"*/};
-		Charset charset = StandardCharsets.UTF_8;
-		IThreeByteValue blockSize = new BigEndianThreeBytesValue(4096);
-		
-		File workspaceFolder = new File("db_workspace");
-		int bufferDataBlockSlots = 50;
-		
-		File outputFile = new File(workspaceFolder, "output.txt");
-		System.out.println("#> SURICATE DB > PARAMETERS INITIALIZED > " + new Date());
-		
-		System.out.println("#> SURICATE DB > INITIALIZING WORKSPACE > " + new Date());
+		sysoAndLog("#> SURICATE DB > INITIALIZING WORKSPACE > ");
 		IDbms dbms = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
-		System.out.println("#> SURICATE DB > WORKSPACE INITIALIZED > " + new Date());
+		sysoAndLog("#> SURICATE DB > WORKSPACE INITIALIZED > ");
 		
-		System.out.println("#> SURICATE DB > IMPORTING TABLES > " + new Date());
-		for (String filePath : filePaths) {
-			System.out.println("##> IMPORTING FILE > " + filePath);
+		sysoAndLog("#> SURICATE DB > IMPORTING TABLES > ");
+		for (String filePath : filesPaths) {
+			sysoAndLog("##> IMPORTING FILE > " + filePath);
 			File textFile = new File(filePath);
-			ITable table = dbms.importTableFile(textFile, charset, separators, blockSize);
+			ITable table = dbms.importTableFile(textFile, filesCharset, separators, blockSize);
 			
-			System.out.println("##> FILE IMPORTED > " + filePath);
-			System.out.println("###> Table Name > " + FilenameUtils.getBaseName( table.getFile().getName() ));
-			System.out.println("###> Table Id > " + table.getHeaderBlock().getHeaderContent().getTableId());
-			System.out.println("###> Table Next Free Block Id > " + table.getHeaderBlock().getHeaderContent().getNextFreeBlockId());
-			System.out.println("###> Table Header Size > " + table.getHeaderBlock().getHeaderContent().getHeaderSize());
+			sysoAndLog("##> FILE IMPORTED > " + filePath);
+			sysoAndLog("###> Table Name > " + FilenameUtils.getBaseName( table.getFile().getName() ));
+			sysoAndLog("###> Table Id > " + table.getHeaderBlock().getHeaderContent().getTableId());
+			sysoAndLog("###> Table Next Free Block Id > " + table.getHeaderBlock().getHeaderContent().getNextFreeBlockId());
+			sysoAndLog("###> Table Header Size > " + table.getHeaderBlock().getHeaderContent().getHeaderSize());
 		}
 		
-		System.out.println("#> SURICATE DB > TABLES IMPORTED > " + new Date());
+		sysoAndLog("#> SURICATE DB > TABLES IMPORTED > ");
 		
-		System.out.println("#> SURICATE DB > SHUTDOWN > " + new Date());
+		sysoAndLog("#> SURICATE DB > SHUTDOWN > ");
 		dbms.shutdown();
 		dbms = null;
-		System.out.println("#> SURICATE DB > INSTANCE DOWN > " + new Date());
+		sysoAndLog("#> SURICATE DB > INSTANCE DOWN > ");
 		
-		System.out.println("#> SURICATE DB > INITIALIZING NEW INSTANCE > " + new Date());
+		sysoAndLog("#> SURICATE DB > INITIALIZING NEW INSTANCE > ");
 		dbms = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
-		System.out.println("#> SURICATE DB > NEW INSTANCE INITIALIZED > " + new Date());
+		sysoAndLog("#> SURICATE DB > NEW INSTANCE INITIALIZED > ");
 		
-		System.out.println("#> SURICATE DB > OUTPUT TABLES DATA > " + new Date());
+		sysoAndLog("#> SURICATE DB > OUTPUT TABLES DATA > ");
 		String dataStr = dbms.dumpAllTablesData(separators);
-		FileUtils.writeStringToFile(outputFile, dataStr, charset);
-		System.out.println("#> SURICATE DB > END OF OUTPUT TABLES DATA > " + new Date());
+		FileUtils.writeStringToFile(outputDataFile, dataStr, filesCharset);
+		sysoAndLog("#> SURICATE DB > END OF OUTPUT TABLES DATA > ");
 		
-		printBufferStatistics(dbms);
+		sysoAndLog("#> SURICATE DB > BUFFER STATISTICS > ");
+		sysoAndLog( dbms.getBufferStatistics() );
+		sysoAndLog("#> SURICATE DB > END OF BUFFER STATISTICS > ");
 		
-		System.out.println("#> SURICATE DB > FETCHING ALL ROW IDS > " + new Date());
+		sysoAndLog("#> SURICATE DB > FETCHING ALL ROW IDS > ");
 		Collection<ITable> allTables = dbms.getAllTables();
 		List<IRowId> allRowIds = new LinkedList<>();
 		for (ITable table : allTables) {
 			Collection<IRowId> tableRowIds = dbms.getRowIds(table);
 			allRowIds.addAll(tableRowIds);
 		}
-		System.out.println("#> SURICATE DB > FINISHED FETCH ALL ROW IDS > " + new Date());
+		sysoAndLog("#> SURICATE DB > FINISHED FETCH ALL ROW IDS > ");
 		
-		System.out.println("#> SURICATE DB > SHUFFLING ALL ROW IDS > " + new Date());
+		sysoAndLog("#> SURICATE DB > SHUFFLING ALL ROW IDS > ");
 		shuffle(allRowIds);
-		System.out.println("#> SURICATE DB > FINISHED SHUFFLE ALL ROW IDS > " + new Date());
+		sysoAndLog("#> SURICATE DB > FINISHED SHUFFLE ALL ROW IDS > ");
 		
-		System.out.println("#> SURICATE DB > ACCESSING SHUFFLED ROW IDS > " + new Date());
+		sysoAndLog("#> SURICATE DB > ACCESSING SHUFFLED ROW IDS > ");
 		for (IRowId rowId : allRowIds) {
-			System.out.println("###> ACCESSING ROW ID > " + rowId.getTableId() + "." + rowId.getBlockId().getValue() + "." + rowId.getByteOffset());
+			sysoAndLog("###> ACCESSING ROW ID > " + rowId.getTableId() + "." + rowId.getBlockId().getValue() + "." + rowId.getByteOffset());
 			dbms.getDataBlock(rowId);
 		}
-		System.out.println("#> SURICATE DB > END OF ACCESS OF SHUFFLED ROW IDS > " + new Date());
+		sysoAndLog("#> SURICATE DB > END OF ACCESS OF SHUFFLED ROW IDS > ");
 		
-		printBufferStatistics(dbms);
+		sysoAndLog("#> SURICATE DB > BUFFER STATISTICS > ");
+		sysoAndLog( dbms.getBufferStatistics() );
+		sysoAndLog("#> SURICATE DB > END OF BUFFER STATISTICS > ");
 		
+		dbms.shutdown();
+		dbms = null;
 	}
-
+	
+	private static void sysoAndLog(String str) throws IOException {
+		String message = dateFormatter.format(new Date()) + " : " + str  + "\n";
+		System.out.print(message);
+		
+		FileUtils.writeStringToFile(outputLogFile, message, StandardCharsets.UTF_8, true);
+	}
+	
 	private static void shuffle(List<IRowId> allRowIds) {
 		long seed = System.nanoTime();
 		Random rng = new Random(seed);
 		Collections.shuffle(allRowIds, rng);
 	}
 
-	private static void printBufferStatistics(IDbms dbms) {
-		System.out.println("#> SURICATE DB > BUFFER STATISTICS > " + new Date());
-		System.out.println( dbms.getBufferStatistics() );
-		System.out.println("#> SURICATE DB > END OF BUFFER STATISTICS > " + new Date());
-	}
-	
 }

@@ -131,7 +131,7 @@ public abstract class AbstractBufferManager
 		Byte tableId = rowId.getTableId();
 		IThreeByteValue blockId = rowId.getBlockId();
 		
-		ITableDataBlock bufferedDB = bufferDeque.stream()
+		ITableDataBlock bufferedDB = bufferDeque.parallelStream()
 												.filter(p -> p.getHeader().getTableId().equals(tableId) && p.getHeader().getBlockId().equals(blockId))
 												.findFirst()
 												.orElse(null);
