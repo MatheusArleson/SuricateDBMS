@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.io.FilenameUtils;
+
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.services.BufferManager;
 import br.com.xavier.suricate.dbms.impl.services.FileSystemManager;
@@ -28,7 +30,7 @@ import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
 
-public class AbstractDbms
+public abstract class AbstractDbms
 		implements IDbms {
 
 	private static final long serialVersionUID = 664946624331325685L;
@@ -70,6 +72,11 @@ public class AbstractDbms
 	}
 
 	@Override
+	public String getBufferStatistics() {
+		return bufferManager.getStatistics();
+	}
+	
+	@Override
 	public void shutdown() {
 		try {
 			bufferManager.shutdown();
@@ -94,6 +101,23 @@ public class AbstractDbms
 	@Override
 	public ITable importTableFile(File file, Charset charset, ITextSeparators separators, IThreeByteValue blockSize) throws IOException {
 		return fileSystemManager.importFile(file, charset, separators, blockSize);
+	}
+	
+	@Override
+	public String dumpAllTablesData(ITextSeparators separators) throws IOException {
+		Collection<ITable> allTables = getAllTables();
+		if(allTables == null || allTables.isEmpty()){
+			return "";
+		}
+		
+		StringBuffer sb = new StringBuffer();
+		for (ITable table : allTables) {
+			String tableData = printData(table, separators);
+			sb.append(tableData);
+			sb.append(separators.getEndLineSeparator());
+		}
+		
+		return sb.toString();
 	}
 	
 	//XXX ROW MANAGER METHODS
@@ -156,12 +180,17 @@ public class AbstractDbms
 			throw new IOException("Null text separators.");
 		}
 		
+		StringBuffer sb = new StringBuffer();
+		
+		String tableName = FilenameUtils.getBaseName( table.getFile().getName() );
+		sb.append(tableName);
+		sb.append(separators.getEndLineSeparator());
+		
 		Collection<IColumnDescriptor> columnsDescriptors = table.getHeaderBlock().getColumnsDescriptors();
 		if(columnsDescriptors == null || columnsDescriptors.isEmpty()){
 			throw new IOException("Invalid columns descriptors");
 		}
 		
-		StringBuffer sb = new StringBuffer();
 		columnsDescriptors.forEach(cd -> {
 			String descriptorStr = cd.printData(separators);
 			sb.append(descriptorStr);

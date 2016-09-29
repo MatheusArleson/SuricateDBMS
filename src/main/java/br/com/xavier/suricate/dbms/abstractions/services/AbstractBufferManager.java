@@ -97,6 +97,25 @@ public abstract class AbstractBufferManager
 		}
 	}
 	
+	@Override
+	public String getStatistics() {
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append("BUFFER STATISTICS");
+		sb.append("\n");
+		sb.append("ACCESS : " + acessCount);
+		sb.append("\n");
+		sb.append("HITS : " + hitCount);
+		sb.append("\n");
+		sb.append("BUFFER SLOTS : " + bufferSlots);
+		sb.append("\n");
+		sb.append("SLOTS FILLED : " + slotsFilled);
+		sb.append("\n");
+		sb.append("END OF BUFFER STATISTICS");
+		
+		return sb.toString();
+	}
+	
 	//XXX PRIVATE METHODS
 	private ITableDataBlock isBlockInMemory(IRowId rowId) {
 		boolean isBufferEmpty = isBufferDequeEmpty();

@@ -12,5 +12,6 @@ public interface IBufferManager {
 	void purge(ITable table);
 	void flush() throws IOException;
 	void shutdown();
+	String getStatistics();
 
 }
