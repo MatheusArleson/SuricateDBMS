@@ -1,20 +1,20 @@
-package br.com.xavier.suricate.dbms.abstractions.table.access;
+package br.com.xavier.suricate.dbms.abstractions.transactions;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 
-public abstract class AbstractRowId 
+public abstract class AbstractObjectId 
 			implements IRowId {
 
-	private static final long serialVersionUID = 1377740557202456606L;
-
+	private static final long serialVersionUID = 3157969748202106314L;
+	
 	//XXX PROPERTIES
 	private Byte tableId;
 	private IThreeByteValue blockId;
 	private Long byteOffset;
 	
 	//XXX CONSTRUCTOR
-	public AbstractRowId(Byte tableId, IThreeByteValue blockId, Long byteOffset) {
+	public AbstractObjectId(Byte tableId, IThreeByteValue blockId, Long byteOffset) {
 		super();
 		setTableId(tableId);
 		setBlockId(blockId);
@@ -40,7 +40,7 @@ public abstract class AbstractRowId
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractRowId other = (AbstractRowId) obj;
+		AbstractObjectId other = (AbstractObjectId) obj;
 		if (tableId == null) {
 			if (other.tableId != null)
 				return false;
