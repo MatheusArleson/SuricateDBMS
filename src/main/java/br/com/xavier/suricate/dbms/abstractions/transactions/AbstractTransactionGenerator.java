@@ -20,18 +20,19 @@ public abstract class AbstractTransactionGenerator
 	private static final long serialVersionUID = 1673904005292670940L;
 
 	//XXX PROPERTIES
-	private List<ITransaction> transactionsQueue;
+	private List<ITransaction> transactions;
 	private Random random;
 	
 	//XXX CONSTRUCTOR
 	public AbstractTransactionGenerator() {
-		transactionsQueue = new CopyOnWriteArrayList<>();
 		random = new Random(System.nanoTime());
 	}
 	
 	//XXX OVERRIDE METHODS
 	@Override
 	public List<ITransaction> generateTransactions(int numberOfTransactions, int maxNumberOfOperations, Collection<IObjectId> objectIds) {
+		transactions = new CopyOnWriteArrayList<>();
+		
 		ArrayList<IObjectId> objectsIdsList = new ArrayList<>(objectIds);
 		
 		int transactionsCount = 0;
@@ -46,7 +47,7 @@ public abstract class AbstractTransactionGenerator
 			transactionsCount++;
 		}
 		
-		while(transactionsQueue.size() != numberOfTransactions){
+		while(transactions.size() != numberOfTransactions){
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -54,7 +55,9 @@ public abstract class AbstractTransactionGenerator
 			}
 		}
 		
-		List<ITransaction> transactions = new ArrayList<>(transactionsQueue);
+		List<ITransaction> transactions = new ArrayList<>(this.transactions);
+		this.transactions = null;
+		
 		return transactions;
 	}
 
@@ -98,7 +101,7 @@ public abstract class AbstractTransactionGenerator
 			
 			transaction.addOperation(finalTransactionOperation);
 			
-			transactionsQueue.add(transaction);
+			transactions.add(transaction);
 		}
 
 		private IObjectId fetchRandomObjectId() {

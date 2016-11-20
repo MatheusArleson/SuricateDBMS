@@ -23,6 +23,50 @@ public abstract class AbstractTransactionOperation
 		setObjectId(objectId);
 	}
 
+	//XXX OVERRIDE METHODS
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((objectId == null) ? 0 : objectId.hashCode());
+		result = prime * result + ((operationType == null) ? 0 : operationType.hashCode());
+		result = prime * result + ((transactionId == null) ? 0 : transactionId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractTransactionOperation other = (AbstractTransactionOperation) obj;
+		if (transactionId == null) {
+			if (other.transactionId != null)
+				return false;
+		} else if (!transactionId.equals(other.transactionId))
+			return false;
+		if (operationType != other.operationType)
+			return false;
+		if (objectId == null) {
+			if (other.objectId != null)
+				return false;
+		} else if (!objectId.equals(other.objectId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "AbstractTransactionOperation [" 
+			+ "operationType=" + operationType 
+			+ ", transactionId=" + transactionId
+			+ ", objectId=" + objectId 
+		+ "]";
+	}
+
 	//XXX PRIVATE METHODS
 	private void setTransactionId(ITransaction transaction) {
 		if(transaction == null){
@@ -46,14 +90,29 @@ public abstract class AbstractTransactionOperation
 	}
 
 	private void setObjectId(IObjectId objectId) {
-		if(objectId == null){
-			if(operationType == null || ( !operationType.equals(OperationTypes.ABORT) && !operationType.equals(OperationTypes.COMMIT) ) ){
+		if(objectId != null){
+			IObjectId.validate(objectId);
+			this.objectId = objectId;
+			
+		} else {
+		
+			if(operationType == null){
 				throw new IllegalArgumentException("ObjectId cannot be null.");
+			} else {
+				switch (operationType) {
+				case ABORT:
+				case COMMIT:
+					break;
+
+				default:
+					IObjectId.validate(objectId);
+					break;
+				}
+				
+				this.objectId = objectId;
+			
 			}
 		}
-		
-		IObjectId.validate(objectId);
-		this.objectId = objectId;
 	}
 	
 	//XXX GETTERS/SETTERS
