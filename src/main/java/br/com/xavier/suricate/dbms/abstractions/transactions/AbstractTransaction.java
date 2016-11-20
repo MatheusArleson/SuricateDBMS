@@ -3,8 +3,8 @@ package br.com.xavier.suricate.dbms.abstractions.transactions;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionOperation;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public abstract class AbstractTransaction 
 		implements ITransaction {
@@ -34,6 +34,11 @@ public abstract class AbstractTransaction
 	@Override
 	public void removeOperation(ITransactionOperation operation) {
 		this.operations.remove(operation);
+	}
+	
+	@Override
+	public boolean hasNextOperation(){
+		return !this.operations.isEmpty();
 	}
 	
 	@Override

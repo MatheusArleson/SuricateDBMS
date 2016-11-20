@@ -3,7 +3,7 @@ package br.com.xavier.suricate.dbms.impl.transactions;
 import java.util.Queue;
 
 import br.com.xavier.suricate.dbms.abstractions.transactions.AbstractTransaction;
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionOperation;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public class Transaction
 		extends AbstractTransaction {

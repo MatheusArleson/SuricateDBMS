@@ -3,8 +3,8 @@ package br.com.xavier.suricate.dbms.abstractions.transactions;
 import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionOperation;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionRandomizer;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public abstract class AbstractTransactionRandomizer
 			implements ITransactionRandomizer {

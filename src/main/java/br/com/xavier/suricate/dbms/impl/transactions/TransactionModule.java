@@ -6,8 +6,8 @@ import java.util.Objects;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionGenerator;
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionOperation;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionRandomizer;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public final class TransactionModule {
 

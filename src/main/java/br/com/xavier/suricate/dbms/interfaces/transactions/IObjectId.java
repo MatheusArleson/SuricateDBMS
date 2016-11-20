@@ -1,8 +1,12 @@
 package br.com.xavier.suricate.dbms.interfaces.transactions;
 
+import java.io.Serializable;
+
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
-public interface IObjectId {
+public interface IObjectId extends Serializable {
+	
+	Long FULL_BYTE_OFFSET = -1L;
 	
 	Byte getTableId();
 	void setTableId(Byte tableId);
@@ -34,7 +38,7 @@ public interface IObjectId {
 		}
 		
 		Long byteOffset = ObjectId.getByteOffset();
-		if(byteOffset != null && byteOffset < 1){
+		if(byteOffset != null && byteOffset < 0 &&  !byteOffset.equals(FULL_BYTE_OFFSET)){
 			throw new IllegalArgumentException("ObjectId instance have an invalid byte offset id.");
 		}
 	}

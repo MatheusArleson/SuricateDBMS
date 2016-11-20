@@ -1,9 +1,9 @@
-package br.com.xavier.suricate.dbms.abstractions.transactions;
+package br.com.xavier.suricate.dbms.abstractions.transactions.operation;
 
 import br.com.xavier.suricate.dbms.enums.OperationTypes;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionOperation;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public abstract class AbstractTransactionOperation 
 			implements ITransactionOperation {
@@ -12,8 +12,8 @@ public abstract class AbstractTransactionOperation
 	
 	//XXX PROPERTIES
 	private OperationTypes operationType;
-	private IObjectId objectId;
 	private Long transactionId;
+	private IObjectId objectId;
 	
 	//XXX CONSTRUCTOR
 	public AbstractTransactionOperation(ITransaction transaction, OperationTypes operationType, IObjectId objectId) {
@@ -23,6 +23,7 @@ public abstract class AbstractTransactionOperation
 		setObjectId(objectId);
 	}
 
+	//XXX PRIVATE METHODS
 	private void setTransactionId(ITransaction transaction) {
 		if(transaction == null){
 			throw new IllegalArgumentException("Transaction cannot be null.");
@@ -46,14 +47,15 @@ public abstract class AbstractTransactionOperation
 
 	private void setObjectId(IObjectId objectId) {
 		if(objectId == null){
-			throw new IllegalArgumentException("ObjectId cannot be null.");
+			if(operationType == null || ( !operationType.equals(OperationTypes.ABORT) && !operationType.equals(OperationTypes.COMMIT) ) ){
+				throw new IllegalArgumentException("ObjectId cannot be null.");
+			}
 		}
 		
 		IObjectId.validate(objectId);
-		
 		this.objectId = objectId;
 	}
-
+	
 	//XXX GETTERS/SETTERS
 	@Override
 	public OperationTypes getOperationType() {
@@ -61,13 +63,13 @@ public abstract class AbstractTransactionOperation
 	}
 
 	@Override
-	public IObjectId getObjectId() {
-		return objectId;
-	}
-
-	@Override
 	public Long getTransactionId() {
 		return new Long(transactionId);
 	}
 
+	@Override
+	public IObjectId getObjectId() {
+		return objectId;
+	}
+	
 }

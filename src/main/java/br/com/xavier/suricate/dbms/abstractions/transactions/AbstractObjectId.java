@@ -2,9 +2,10 @@ package br.com.xavier.suricate.dbms.abstractions.transactions;
 
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
+import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
 
 public abstract class AbstractObjectId 
-			implements IRowId {
+			implements IObjectId {
 
 	private static final long serialVersionUID = 3157969748202106314L;
 	
