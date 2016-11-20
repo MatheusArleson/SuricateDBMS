@@ -1,12 +1,13 @@
-package br.com.xavier.suricate.dbms.interfaces.transactions;
+package br.com.xavier.suricate.dbms.interfaces.transactions.context;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
+
+import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
 
 public interface ITransactionGenerator 
 		extends Serializable {
 	
-	List<ITransaction> generateTransactions(int numberOfTransactions, int maxNumberOfOperations, Collection<IObjectId> objectIds);
+	ITransactionContext generateTransactions(int numberOfTransactions, int maxNumberOfOperations, Collection<IObjectId> objectIds);
 
 }
