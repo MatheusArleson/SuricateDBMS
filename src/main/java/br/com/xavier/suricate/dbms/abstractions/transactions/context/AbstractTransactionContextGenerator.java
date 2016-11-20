@@ -1,4 +1,4 @@
-package br.com.xavier.suricate.dbms.abstractions.transactions;
+package br.com.xavier.suricate.dbms.abstractions.transactions.context;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,30 +8,32 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import br.com.xavier.suricate.dbms.enums.OperationTypes;
 import br.com.xavier.suricate.dbms.impl.transactions.Transaction;
+import br.com.xavier.suricate.dbms.impl.transactions.context.TransactionContext;
 import br.com.xavier.suricate.dbms.impl.transactions.operation.TransactionOperation;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransactionGenerator;
+import br.com.xavier.suricate.dbms.interfaces.transactions.context.ITransactionContext;
+import br.com.xavier.suricate.dbms.interfaces.transactions.context.ITransactionGenerator;
 import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
-public abstract class AbstractTransactionGenerator 
+public abstract class AbstractTransactionContextGenerator 
 		implements ITransactionGenerator {
 
 	private static final long serialVersionUID = 1673904005292670940L;
 
 	//XXX PROPERTIES
-	private List<ITransaction> transactions;
+	private List<ITransaction> transactionsBuffer;
 	private Random random;
 	
 	//XXX CONSTRUCTOR
-	public AbstractTransactionGenerator() {
+	public AbstractTransactionContextGenerator() {
 		random = new Random(System.nanoTime());
 	}
 	
 	//XXX OVERRIDE METHODS
 	@Override
-	public List<ITransaction> generateTransactions(int numberOfTransactions, int maxNumberOfOperations, Collection<IObjectId> objectIds) {
-		transactions = new CopyOnWriteArrayList<>();
+	public ITransactionContext generateTransactions(int numberOfTransactions, int maxNumberOfOperations, Collection<IObjectId> objectIds) {
+		transactionsBuffer = new CopyOnWriteArrayList<>();
 		
 		ArrayList<IObjectId> objectsIdsList = new ArrayList<>(objectIds);
 		
@@ -47,7 +49,7 @@ public abstract class AbstractTransactionGenerator
 			transactionsCount++;
 		}
 		
-		while(transactions.size() != numberOfTransactions){
+		while(transactionsBuffer.size() != numberOfTransactions){
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -55,10 +57,10 @@ public abstract class AbstractTransactionGenerator
 			}
 		}
 		
-		List<ITransaction> transactions = new ArrayList<>(this.transactions);
-		this.transactions = null;
+		TransactionContext transactionContext = new TransactionContext(this.transactionsBuffer);
+		transactionsBuffer = null;
 		
-		return transactions;
+		return transactionContext;
 	}
 
 	private int genreateNumberOfTransactions(int maxNumberOfOperations) {
@@ -101,7 +103,7 @@ public abstract class AbstractTransactionGenerator
 			
 			transaction.addOperation(finalTransactionOperation);
 			
-			transactions.add(transaction);
+			transactionsBuffer.add(transaction);
 		}
 
 		private IObjectId fetchRandomObjectId() {

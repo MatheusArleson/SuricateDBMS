@@ -12,13 +12,13 @@ public abstract class AbstractTransactionOperation
 	
 	//XXX PROPERTIES
 	private OperationTypes operationType;
-	private Long transactionId;
+	private ITransaction transaction;
 	private IObjectId objectId;
 	
 	//XXX CONSTRUCTOR
 	public AbstractTransactionOperation(ITransaction transaction, OperationTypes operationType, IObjectId objectId) {
 		super();
-		setTransactionId(transaction);
+		setTransaction(transaction);
 		setOperationType(operationType);
 		setObjectId(objectId);
 	}
@@ -30,7 +30,7 @@ public abstract class AbstractTransactionOperation
 		int result = 1;
 		result = prime * result + ((objectId == null) ? 0 : objectId.hashCode());
 		result = prime * result + ((operationType == null) ? 0 : operationType.hashCode());
-		result = prime * result + ((transactionId == null) ? 0 : transactionId.hashCode());
+		result = prime * result + ((transaction == null) ? 0 : transaction.hashCode());
 		return result;
 	}
 
@@ -43,17 +43,17 @@ public abstract class AbstractTransactionOperation
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractTransactionOperation other = (AbstractTransactionOperation) obj;
-		if (transactionId == null) {
-			if (other.transactionId != null)
-				return false;
-		} else if (!transactionId.equals(other.transactionId))
-			return false;
 		if (operationType != other.operationType)
 			return false;
 		if (objectId == null) {
 			if (other.objectId != null)
 				return false;
 		} else if (!objectId.equals(other.objectId))
+			return false;
+		if (transaction == null) {
+			if (other.transaction != null)
+				return false;
+		} else if (!transaction.equals(other.transaction))
 			return false;
 		return true;
 	}
@@ -62,23 +62,18 @@ public abstract class AbstractTransactionOperation
 	public String toString() {
 		return "AbstractTransactionOperation [" 
 			+ "operationType=" + operationType 
-			+ ", transactionId=" + transactionId
+			+ ", transaction=" + transaction
 			+ ", objectId=" + objectId 
 		+ "]";
 	}
 
 	//XXX PRIVATE METHODS
-	private void setTransactionId(ITransaction transaction) {
+	private void setTransaction(ITransaction transaction) {
 		if(transaction == null){
 			throw new IllegalArgumentException("Transaction cannot be null.");
 		}
 		
-		Long transactionId = transaction.getId();
-		if(transactionId == null){
-			throw new IllegalArgumentException("Transaction id cannot be null.");
-		}
-		
-		this.transactionId = transactionId;
+		this.transaction = transaction;
 	}
 
 	private void setOperationType(OperationTypes operationType) {
@@ -122,8 +117,8 @@ public abstract class AbstractTransactionOperation
 	}
 
 	@Override
-	public Long getTransactionId() {
-		return new Long(transactionId);
+	public ITransaction getTransaction() {
+		return transaction;
 	}
 
 	@Override

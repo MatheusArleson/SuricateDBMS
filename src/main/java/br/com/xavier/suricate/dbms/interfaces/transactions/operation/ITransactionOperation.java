@@ -4,12 +4,13 @@ import java.io.Serializable;
 
 import br.com.xavier.suricate.dbms.enums.OperationTypes;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
+import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
 
 public interface ITransactionOperation 
 		extends Serializable {
 	
 	OperationTypes getOperationType();
-	Long getTransactionId();
 	IObjectId getObjectId();
+	ITransaction getTransaction();
 	
 }

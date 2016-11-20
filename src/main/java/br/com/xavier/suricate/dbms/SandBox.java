@@ -7,10 +7,10 @@ import java.util.Random;
 
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.transactions.ObjectId;
-import br.com.xavier.suricate.dbms.impl.transactions.TransactionGenerator;
+import br.com.xavier.suricate.dbms.impl.transactions.context.TransactionContextGenerator;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
-import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
+import br.com.xavier.suricate.dbms.interfaces.transactions.context.ITransactionContext;
 
 public class SandBox {
 	
@@ -21,8 +21,8 @@ public class SandBox {
 		int maxNumberOfOperations = 5;
 		Collection<IObjectId> objectIds =generateObjectIds(numberOfTransactions, new Random(System.nanoTime()));
 
-		TransactionGenerator tg = new TransactionGenerator();
-		List<ITransaction> transactions = tg.generateTransactions(numberOfTransactions, maxNumberOfOperations, objectIds);
+		TransactionContextGenerator tg = new TransactionContextGenerator();
+		ITransactionContext ctx = tg.generateTransactions(numberOfTransactions, maxNumberOfOperations, objectIds);
 		
 		System.out.println("done");
 		
