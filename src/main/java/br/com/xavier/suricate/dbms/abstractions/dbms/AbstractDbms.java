@@ -30,6 +30,8 @@ import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlock;
 import br.com.xavier.suricate.dbms.interfaces.table.data.ITableDataBlockHeader;
 import br.com.xavier.suricate.dbms.interfaces.table.header.IColumnDescriptor;
 import br.com.xavier.suricate.dbms.interfaces.table.header.ITableHeaderBlockContent;
+import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public abstract class AbstractDbms
 		implements IDbms {
@@ -85,6 +87,12 @@ public abstract class AbstractDbms
 		}catch (Exception e) {
 			//TODO FIXME log exception...
 		}
+	}
+	
+	@Override
+	public IScheduleResult schedule(ITransactionOperation txOp) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	//XXX TABLE MANAGER METHODS

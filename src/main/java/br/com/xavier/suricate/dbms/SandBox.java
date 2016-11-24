@@ -1,21 +1,49 @@
 package br.com.xavier.suricate.dbms;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import br.com.xavier.suricate.dbms.impl.dbms.SuricateDbms;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.transactions.ObjectId;
 import br.com.xavier.suricate.dbms.impl.transactions.context.TransactionContextGenerator;
+import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
+import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
 import br.com.xavier.suricate.dbms.interfaces.transactions.context.ITransactionContext;
+import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public class SandBox {
 	
-	@SuppressWarnings("unused")
-	public static void main(String[] args) {
+	private static File workspaceFolder = new File("db_workspace");
+	private static IThreeByteValue blockSize = new BigEndianThreeBytesValue(4096);
+	private static Integer bufferDataBlockSlots = 3000;
+	
+	private static File outputDataFile = new File(workspaceFolder, "outputData.txt");
+	private static File outputLogFile = new File(workspaceFolder, "outputLog.log");
+	
+	private static String columnsSeparator = new String("|");
+	private static String nameMetadataSeparator = new String("%");
+	private static String typeSizeSeparator = new String("#");
+	private static String endLineSeparator = new String("\n");
+	
+	private static String[] filesPaths = new String[] {"file_samples/forn-tpch.txt" , "file_samples/cli-tpch.txt"/*, "file_samples/file_sample.txt", "file_samples/file_sample2.txt", "file_samples/file_sample3.txt"*/};
+	private static Charset filesCharset = StandardCharsets.UTF_8;
+	
+	private static String timeStampPattern = "dd/MM/yyyy HH:mm:ss.SSS";
+	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(timeStampPattern);
+	
+	public static void main(String[] args) throws Exception {
+		
+		IDbms database = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
 		
 		int numberOfTransactions = 5;
 		int maxNumberOfOperations = 5;
@@ -23,6 +51,12 @@ public class SandBox {
 
 		TransactionContextGenerator tg = new TransactionContextGenerator();
 		ITransactionContext ctx = tg.generateTransactions(numberOfTransactions, maxNumberOfOperations, objectIds);
+		
+		while(ctx.hasNext()){
+			ITransactionOperation txOp = ctx.next();
+			IScheduleResult scheduleResult = database.schedule(txOp);
+			ctx.process(scheduleResult);
+		}
 		
 		System.out.println("done");
 		

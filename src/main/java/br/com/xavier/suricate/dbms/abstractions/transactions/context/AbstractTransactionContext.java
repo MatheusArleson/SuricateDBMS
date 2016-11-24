@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import br.com.xavier.suricate.dbms.enums.TransactionOperationStatus;
+import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
 import br.com.xavier.suricate.dbms.interfaces.transactions.context.ITransactionContext;
 import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
@@ -63,7 +65,30 @@ public abstract class AbstractTransactionContext
 	}
 	
 	@Override
-	public void blockTransaction(ITransaction transaction) {
+	public void process(IScheduleResult result) {
+		if( result == null ){
+			throw new IllegalArgumentException("Null schedule result");
+		}
+		
+		TransactionOperationStatus status = result.getStatus();
+		switch (status) {
+		case SCHEDULED:
+			break;
+			
+		case WAITING:
+			break;
+			
+		case ABORT_TRANSACTION:
+			break;
+
+		default:
+			break;
+		}
+		
+	}
+	
+	//XXX PRIVATE METHODS
+	private void blockTransaction(ITransaction transaction) {
 		if( isTransactionBlocked(transaction) ){
 			return;
 		}
@@ -71,8 +96,7 @@ public abstract class AbstractTransactionContext
 		addTransactionToBlocked(transaction);
 	}
 	
-	@Override
-	public void unblockTransaction(ITransaction transaction) {
+	private void unblockTransaction(ITransaction transaction) {
 		if( !isTransactionBlocked(transaction) ){
 			return;
 		}
@@ -80,7 +104,6 @@ public abstract class AbstractTransactionContext
 		removeTransactionFromBlocked(transaction);
 	}
 	
-	//XXX PRIVATE METHODS
 	private void setTransactions(List<ITransaction> transactions){
 		if(transactions == null || transactions.isEmpty()){
 			throw new IllegalArgumentException("Transactions must not be null or empry.");
