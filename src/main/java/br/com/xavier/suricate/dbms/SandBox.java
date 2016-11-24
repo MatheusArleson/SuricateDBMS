@@ -17,7 +17,7 @@ public class SandBox {
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		
-		int numberOfTransactions = 1;
+		int numberOfTransactions = 5;
 		int maxNumberOfOperations = 5;
 		Collection<IObjectId> objectIds =generateObjectIds(numberOfTransactions, new Random(System.nanoTime()));
 

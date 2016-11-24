@@ -23,26 +23,27 @@ public abstract class AbstractTransactionContext
 	
 	//XXX CONSTRUCTOR
 	public AbstractTransactionContext(List<ITransaction> transactions) {
-		setTransactions(transactions);
 		blockedTransactionsMap = new LinkedHashMap<>();
 		minTxId = Long.MAX_VALUE;
 		maxTxId = Long.MIN_VALUE;
+		setTransactions(transactions);
 	}
 	
 	//XXX OVERRIDE METHODS
 	@Override
 	public boolean hasNext() {
-		
-		
-		
-		// TODO Auto-generated method stub
-		return false;
+		return !transactionsMap.isEmpty();
 	}
 	
 	@Override
 	public ITransactionOperation next(){
 		ITransaction tx = fetchRandomTransaction();
-		ITransactionOperation txOp = tx.getNextOperation(); 
+		ITransactionOperation txOp = tx.getNextOperation();
+		
+		if( !tx.hasNextOperation() ){
+			handleEmptyTransaction( tx );
+		}
+		
 		return txOp;
 	}
 	
@@ -90,16 +91,28 @@ public abstract class AbstractTransactionContext
 			Long txId = t.getId();
 			setMinTransactionId(txId);
 			setMaxTransactionId(txId);
-			transactionsMap.put(txId, t);
+			mapTransaction(t, txId);
 		});
 	}
-
+	
 	private void setMaxTransactionId(Long txId) {
 		this.maxTxId = Math.max(txId, this.maxTxId);
 	}
 
 	private void setMinTransactionId(Long txId) {
 		this.minTxId = Math.min(txId, this.minTxId);
+	}
+	
+	private void mapTransaction(ITransaction t, Long txId) {
+		transactionsMap.put(txId, t);
+	}
+
+	private void ummapTransaction(ITransaction emptyTransation) {
+		transactionsMap.remove( emptyTransation.getId() );
+	}
+	
+	private void handleEmptyTransaction( ITransaction emptyTransation ){
+		ummapTransaction(emptyTransation);
 	}
 	
 	private void addTransactionToBlocked(ITransaction transaction) {
