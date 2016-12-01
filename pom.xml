@@ -20,19 +20,50 @@
 	</build>
 
 	<dependencies>
+		
+		<!-- GITHUB DEPENCIES -->
+		<!-- DOWNLOAD AND INSTALL IN MAVEN  -->
+	
+		<!-- GRAPHS LIBRARY -->
+		<!-- https://github.com/MatheusArleson/Graphs -->
+		<dependency>
+			<groupId>br.com.xavier</groupId>
+			<artifactId>Graphs</artifactId>
+			<version>1.7.6</version>
+		</dependency>
+		
+		<!-- MATRIX LIBRARY -->
+		<!-- https://github.com/MatheusArleson/Matrix -->
+		<dependency>
+			<groupId>br.com.xavier</groupId>
+			<artifactId>Matrix</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+		
+		<!-- GRAPHS CYTOSCAPE LIBRARY -->
+		<!-- https://github.com/MatheusArleson/GraphsCytoscapeParser -->
+		<dependency>
+			<groupId>br.com.xavier</groupId>
+			<artifactId>GraphsCytoscapeParser</artifactId>
+			<version>1.4.1</version>
+		</dependency>
 
+		<!-- END OF GITHUB DEPENCIES -->
+
+		<!-- MAVEN DEPENCIES -->
+		
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
 		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-collections4</artifactId>
-		    <version>4.1</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.1</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
@@ -42,7 +73,8 @@
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
-
+	
+		<!-- END OF MAVEN DEPENCIES -->
 	</dependencies>
 
 </project>

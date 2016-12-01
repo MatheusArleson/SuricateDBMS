@@ -15,14 +15,20 @@ import org.apache.commons.io.FilenameUtils;
 
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.services.BufferManager;
+import br.com.xavier.suricate.dbms.impl.services.DeadLockManager;
 import br.com.xavier.suricate.dbms.impl.services.FileSystemManager;
+import br.com.xavier.suricate.dbms.impl.services.LockManager;
+import br.com.xavier.suricate.dbms.impl.services.TransactionManager;
 import br.com.xavier.suricate.dbms.impl.table.access.RowId;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.services.IBufferManager;
+import br.com.xavier.suricate.dbms.interfaces.services.IDeadLockManager;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileNameFilter;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileSystemManager;
+import br.com.xavier.suricate.dbms.interfaces.services.ILockManager;
 import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
+import br.com.xavier.suricate.dbms.interfaces.services.ITransactionManager;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
@@ -47,6 +53,10 @@ public abstract class AbstractDbms
 	
 	private IBufferManager bufferManager;
 	private IFileSystemManager fileSystemManager;
+	private ILockManager lockManager;
+	private ITransactionManager transactionManager;
+
+	private IDeadLockManager deadLockManager;
 	
 	//XXX CONSTRUCTOR
 	public AbstractDbms(File workspaceFolder, IFileNameFilter fileNameFilter, int bufferDataBlockSlots) throws IOException {
@@ -60,6 +70,10 @@ public abstract class AbstractDbms
 	private void initialize() throws IOException {
 		this.fileSystemManager = new FileSystemManager(workspaceFolder, fileNameFilter);
 		this.bufferManager = new BufferManager(fileSystemManager, bufferDataBlockSlots);
+		
+		this.lockManager = new LockManager(workspaceFolder);
+		this.deadLockManager = new DeadLockManager();
+		this.transactionManager = new TransactionManager(lockManager, deadLockManager);
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -84,15 +98,15 @@ public abstract class AbstractDbms
 		try {
 			bufferManager.shutdown();
 			fileSystemManager.shutdown();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			//TODO FIXME log exception...
+			e.printStackTrace();
 		}
 	}
 	
 	@Override
 	public IScheduleResult schedule(ITransactionOperation txOp) {
-		// TODO Auto-generated method stub
-		return null;
+		return transactionManager.schedule( txOp );
 	}
 	
 	//XXX TABLE MANAGER METHODS
@@ -223,7 +237,6 @@ public abstract class AbstractDbms
 		// TODO Auto-generated method stub
 		
 	}
-
 	
 	@Override
 	public void deleteRow(IRowId rowId) {
