@@ -1,11 +1,14 @@
 package br.com.xavier.suricate.dbms.abstractions.services;
 
+import java.util.Collection;
+
 import br.com.xavier.graphs.impl.edges.DefaultUnweightedEdge;
 import br.com.xavier.graphs.impl.nodes.NumberedNode;
 import br.com.xavier.graphs.impl.simple.directed.DefaultSDUGraph;
 import br.com.xavier.graphs.interfaces.Graph;
 import br.com.xavier.suricate.dbms.interfaces.services.IDeadLockManager;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IDeadLockResult;
+import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
 import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactionOperation;
 
 public abstract class AbstractDeadLockManager implements IDeadLockManager {
@@ -22,9 +25,12 @@ public abstract class AbstractDeadLockManager implements IDeadLockManager {
 	
 	//XXX OVERRIDE METHODS
 	@Override
-	public IDeadLockResult checkDeadLock(ITransactionOperation txOp) {
+	public IDeadLockResult detectDeadLock(ITransactionOperation txOp) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	//XXX ABSTRACT METHODS
+	public abstract  Collection<ITransaction> resolveDeadLock(IDeadLockResult deadLockResult);
 	
 }

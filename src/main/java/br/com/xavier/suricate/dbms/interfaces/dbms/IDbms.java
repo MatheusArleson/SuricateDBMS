@@ -3,6 +3,7 @@ package br.com.xavier.suricate.dbms.interfaces.dbms;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
@@ -19,6 +20,6 @@ public interface IDbms
 	
 	void shutdown();
 	
-	IScheduleResult schedule(ITransactionOperation txOp);
+	Collection<IScheduleResult> schedule(ITransactionOperation txOp);
 
 }
