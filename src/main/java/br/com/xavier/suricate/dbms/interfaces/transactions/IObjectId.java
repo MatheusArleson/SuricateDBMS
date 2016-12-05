@@ -2,6 +2,7 @@ package br.com.xavier.suricate.dbms.interfaces.transactions;
 
 import java.io.Serializable;
 
+import br.com.xavier.suricate.dbms.enums.ObjectIdType;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 
 public interface IObjectId extends Serializable {
@@ -16,6 +17,11 @@ public interface IObjectId extends Serializable {
 	
 	Long getByteOffset();
 	void setByteOffset(Long byteOffset);
+	
+	ObjectIdType getType();
+	boolean isTypeTable();
+	boolean isTypeBlock();
+	boolean isTypeRow();
 	
 	static void validate(IObjectId ObjectId) {
 		if(ObjectId == null){

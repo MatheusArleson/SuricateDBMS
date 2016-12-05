@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.abstractions.transactions;
 
+import br.com.xavier.suricate.dbms.enums.ObjectIdType;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
@@ -68,7 +69,37 @@ public abstract class AbstractObjectId
 			+ ", byteOffset=" + byteOffset 
 		+ "]";
 	}
-
+	
+	@Override
+	public ObjectIdType getType() {
+		ObjectIdType type = ObjectIdType.TABLE;
+		
+		if( blockId != null ){
+			type = ObjectIdType.BLOCK;
+		}
+		
+		if( byteOffset != null && !byteOffset.equals(IObjectId.FULL_BYTE_OFFSET) ){
+			type = ObjectIdType.ROW;
+		}
+		
+		return type;
+	}
+	
+	@Override
+	public boolean isTypeTable() {
+		return getType().compareTo(ObjectIdType.TABLE) == 0;
+	}
+	
+	@Override
+	public boolean isTypeBlock() {
+		return getType().compareTo(ObjectIdType.BLOCK) == 0;
+	}
+	
+	@Override
+	public boolean isTypeRow() {
+		return getType().compareTo(ObjectIdType.ROW) == 0;
+	}
+	
 	//XXX GETTERS/SETTERS
 	@Override
 	public Byte getTableId() {

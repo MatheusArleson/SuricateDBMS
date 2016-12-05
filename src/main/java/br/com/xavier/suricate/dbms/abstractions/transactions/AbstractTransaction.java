@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.abstractions.transactions;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -13,6 +14,7 @@ public abstract class AbstractTransaction
 	
 	//XXX PROPERTIES
 	private Long id;
+	private LocalDateTime timeStamp;
 	private Queue<ITransactionOperation> operations;
 	
 	//XXX CONSTRUCTORS
@@ -21,6 +23,7 @@ public abstract class AbstractTransaction
 	}
 	
 	public AbstractTransaction(Long id, Queue<ITransactionOperation> operations) {
+		this.timeStamp = LocalDateTime.now();
 		setId(id);
 		setOperations(operations);
 	}
@@ -79,6 +82,11 @@ public abstract class AbstractTransaction
 	@Override
 	public Long getId() {
 		return new Long(id);
+	}
+	
+	@Override
+	public LocalDateTime getTimeStamp() {
+		return timeStamp;
 	}
 	
 	//XXX PRIVATE METHODS

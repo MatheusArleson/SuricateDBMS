@@ -41,6 +41,7 @@ public class SandBox {
 	private static String timeStampPattern = "dd/MM/yyyy HH:mm:ss.SSS";
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(timeStampPattern);
 	
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception {
 		
 		IDbms database = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
@@ -54,8 +55,8 @@ public class SandBox {
 		
 		while(ctx.hasNext()){
 			ITransactionOperation txOp = ctx.next();
-			IScheduleResult scheduleResult = database.schedule(txOp);
-			ctx.process(scheduleResult);
+			Collection<IScheduleResult> scheduleResults = database.schedule(txOp);
+			//ctx.process(scheduleResults);
 		}
 		
 		System.out.println("done");

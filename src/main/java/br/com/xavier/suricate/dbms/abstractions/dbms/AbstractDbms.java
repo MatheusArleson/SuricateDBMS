@@ -15,22 +15,18 @@ import org.apache.commons.io.FilenameUtils;
 
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.services.BufferManager;
-import br.com.xavier.suricate.dbms.impl.services.WaitDieDeadLockManager;
-import br.com.xavier.suricate.dbms.impl.services.WaitManager;
 import br.com.xavier.suricate.dbms.impl.services.FileSystemManager;
-import br.com.xavier.suricate.dbms.impl.services.LockManager;
 import br.com.xavier.suricate.dbms.impl.services.TransactionManager;
+import br.com.xavier.suricate.dbms.impl.services.lock.WaitDieDeadLockManager;
 import br.com.xavier.suricate.dbms.impl.table.access.RowId;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
 import br.com.xavier.suricate.dbms.interfaces.services.IBufferManager;
-import br.com.xavier.suricate.dbms.interfaces.services.IDeadLockManager;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileNameFilter;
 import br.com.xavier.suricate.dbms.interfaces.services.IFileSystemManager;
 import br.com.xavier.suricate.dbms.interfaces.services.ILockManager;
 import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.services.ITransactionManager;
-import br.com.xavier.suricate.dbms.interfaces.services.IWaitManager;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
 import br.com.xavier.suricate.dbms.interfaces.table.data.IRowEntry;
@@ -56,20 +52,14 @@ public abstract class AbstractDbms
 	private IBufferManager bufferManager;
 	private IFileSystemManager fileSystemManager;
 	
-	
 	private ILockManager lockManager;
-	private IWaitManager waitManager;
 	private ITransactionManager transactionManager;
 
-	private IDeadLockManager deadLockManager;
-	
 	//XXX CONSTRUCTOR
-	public AbstractDbms(File workspaceFolder, IFileNameFilter fileNameFilter, int bufferDataBlockSlots, IDeadLockManager deadLockManager) throws IOException {
+	public AbstractDbms(File workspaceFolder, IFileNameFilter fileNameFilter, int bufferDataBlockSlots) throws IOException {
 		this.workspaceFolder = Objects.requireNonNull(workspaceFolder, "Workspace folder must not be null.");
 		this.fileNameFilter = Objects.requireNonNull(fileNameFilter, "File name filter must not be null.");
 		this.bufferDataBlockSlots = bufferDataBlockSlots;
-		
-		this.deadLockManager = Objects.requireNonNull( deadLockManager );
 		
 		initialize();
 	}
@@ -78,10 +68,9 @@ public abstract class AbstractDbms
 		this.fileSystemManager = new FileSystemManager(workspaceFolder, fileNameFilter);
 		this.bufferManager = new BufferManager(fileSystemManager, bufferDataBlockSlots);
 		
-		this.lockManager = new LockManager(workspaceFolder);
-		this.waitManager = new WaitManager();
+		this.lockManager = new WaitDieDeadLockManager();
 		
-		this.transactionManager = new TransactionManager(lockManager, waitManager, deadLockManager);
+		this.transactionManager = new TransactionManager(lockManager);
 	}
 	
 	//XXX OVERRIDE METHODS
