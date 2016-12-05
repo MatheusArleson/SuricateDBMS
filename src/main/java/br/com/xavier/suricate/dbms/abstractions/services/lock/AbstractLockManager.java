@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Queue;
 
 import br.com.xavier.graphs.impl.algorithms.NodeInfo;
 import br.com.xavier.graphs.impl.edges.DefaultUnweightedEdge;
@@ -38,7 +39,7 @@ public abstract class AbstractLockManager implements ILockManager {
 	private Map<String, List<ILock>> blocksLocksMap;
 	private Map<String, List<ILock>> rowsLocksMap;
 	
-	private Map<ITransaction, List<ITransactionOperation>> waitMap;
+	private Map<ITransaction, Queue<ITransactionOperation>> waitMap;
 	
 	private GraphCycleDetector graphCycleDetector;
 	private List<NodeInfo> cycleNodesInfo;
@@ -139,14 +140,7 @@ public abstract class AbstractLockManager implements ILockManager {
 						
 					case WAITING:
 						processWaitResult(lockTxOp, relatedTx);
-						
-						boolean hasDeadLock = detectGraphCycle( lockTx );
-						if( hasDeadLock ){
-							IScheduleResult deadLockResult = solveDeadLock(cycleNodesInfo);
-							schedulesResults.add(deadLockResult);
-							processAbortResult(deadLockResult, abortedTransactions);
-						} 
-						 
+						handleDeadLock(lockTx, schedulesResults, abortedTransactions); 
 						break;
 
 					default:
@@ -154,6 +148,11 @@ public abstract class AbstractLockManager implements ILockManager {
 					}
 				}
 			}
+		}
+		
+		for (ITransaction abortedTx : abortedTransactions) {
+			Collection<IScheduleResult>reprocessResults = reprocessWaitingTransactions( abortedTx );
+			schedulesResults.addAll(reprocessResults);
 		}
 		
 		if(schedulesResults.isEmpty()){
@@ -301,6 +300,15 @@ public abstract class AbstractLockManager implements ILockManager {
 		addEdge(tx, otherTx);
 		addToWaitMap(otherTx, txOp);
 	}
+	
+	private void handleDeadLock(ITransaction lockTx, Collection<IScheduleResult> schedulesResults, Collection<ITransaction> abortedTransactions) {
+		boolean hasDeadLock = detectGraphCycle( lockTx );
+		if( hasDeadLock ){
+			IScheduleResult deadLockResult = solveDeadLock(cycleNodesInfo);
+			schedulesResults.add(deadLockResult);
+			processAbortResult(deadLockResult, abortedTransactions);
+		}
+	}
 
 	private IScheduleResult solveDeadLock(Collection<NodeInfo> cycleNodesInfo) {
 		Collection<TransactionNode> visitedTxNodes = fetchVisitedNodes(cycleNodesInfo);
@@ -310,6 +318,19 @@ public abstract class AbstractLockManager implements ILockManager {
 		IScheduleResult result = new ScheduleResult(txOp, TransactionOperationStatus.ABORT_TRANSACTION);
 		
 		return result;
+	}
+	
+	private Collection<IScheduleResult> reprocessWaitingTransactions(ITransaction abortedTx){
+		LinkedList<IScheduleResult> schedulesResults = new LinkedList<>();
+		
+		Queue<ITransactionOperation> waitingOperations = getWaitingOperations( abortedTx );
+		for (ITransactionOperation waitingTxOp : waitingOperations) {
+			Collection<IScheduleResult> results = process(waitingTxOp);
+			schedulesResults.addAll(results);
+		}
+		
+		purgeFromWaitMap(abortedTx);
+		return schedulesResults;
 	}
 	
 	//XXX LOCK MAPS METHODS
@@ -368,7 +389,7 @@ public abstract class AbstractLockManager implements ILockManager {
 	
 	//XXX WAIT MAP METHODS
 	private void addToWaitMap(ITransaction tx, ITransactionOperation txOp){
-		List<ITransactionOperation> waitingTxOps = waitMap.get(tx);
+		Queue<ITransactionOperation> waitingTxOps = waitMap.get(tx);
 		if(waitingTxOps == null){
 			waitingTxOps = new LinkedList<>();
 		}
@@ -377,18 +398,24 @@ public abstract class AbstractLockManager implements ILockManager {
 		waitMap.put(tx, waitingTxOps);
 	}
 	
-	private Collection<ITransactionOperation> removeFromWaitMap(ITransaction tx){
-		Collection<ITransactionOperation> freeTxOps = new LinkedList<>();
+	private Queue<ITransactionOperation> getWaitingOperations(ITransaction tx){
+		Queue<ITransactionOperation> waitingQueue = waitMap.get(tx);
+		if(waitingQueue == null){
+			return new LinkedList<>();
+		}
 		
-		Iterator<Map.Entry<ITransaction,List<ITransactionOperation>>> mapKeysIterator = waitMap.entrySet().iterator();
+		return waitingQueue;
+	}
+	
+	private void purgeFromWaitMap(ITransaction tx){
+		Iterator<Map.Entry<ITransaction, Queue<ITransactionOperation>>> mapKeysIterator = waitMap.entrySet().iterator();
 		while (mapKeysIterator.hasNext()) {
-			List<ITransactionOperation> waitingTxOps = waitMap.get(mapKeysIterator.next());
+			Queue<ITransactionOperation> waitingTxOps = waitMap.get(mapKeysIterator.next());
 			
-			ListIterator<ITransactionOperation> iterator = waitingTxOps.listIterator();
+			Iterator<ITransactionOperation> iterator = waitingTxOps.iterator();
 			while(iterator.hasNext()){
 				ITransactionOperation txOp = iterator.next();
 				if(txOp.getTransaction().getId().equals(tx.getId())){
-					freeTxOps.add(txOp);
 					iterator.remove();
 				}
 			}
@@ -397,8 +424,6 @@ public abstract class AbstractLockManager implements ILockManager {
 				mapKeysIterator.remove();
 			}
 		}
-		
-		return freeTxOps;
 	}
 	
 	//XXX GRAPH METHODS
