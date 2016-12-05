@@ -7,11 +7,11 @@ import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
 
 public class TransactionNode extends AbstractNode implements Comparable<TransactionNode> {
 
-	private Long transactionId;
+	private ITransaction tx;
 	
 	//XXX CONSTRUCTOR
 	public TransactionNode(ITransaction tx) {
-		this.transactionId = Objects.requireNonNull(tx.getId());
+		this.tx = Objects.requireNonNull(tx);
 	}
 	
 	//XXX OVERRIDE METHODS
@@ -19,7 +19,7 @@ public class TransactionNode extends AbstractNode implements Comparable<Transact
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((transactionId == null) ? 0 : transactionId.hashCode());
+		result = prime * result + ((tx == null) ? 0 : tx.hashCode());
 		return result;
 	}
 
@@ -32,17 +32,17 @@ public class TransactionNode extends AbstractNode implements Comparable<Transact
 		if (getClass() != obj.getClass())
 			return false;
 		TransactionNode other = (TransactionNode) obj;
-		if (transactionId == null) {
-			if (other.transactionId != null)
+		if (tx == null) {
+			if (other.tx != null)
 				return false;
-		} else if (!transactionId.equals(other.transactionId))
+		} else if (!tx.equals(other.tx))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "[transactionId=" + transactionId + "]";
+		return "[transactionId=" + tx.getId() + "]";
 	}
 	
 	@Override
@@ -51,11 +51,17 @@ public class TransactionNode extends AbstractNode implements Comparable<Transact
 			return -1;
 		}
 		
-		if(transactionId == other.transactionId){
+		Long thisTxId = tx.getId();
+		Long otherTxId = other.tx.getId();
+		if(thisTxId == otherTxId){
 			return 0;
 		} else {
-			return transactionId < other.transactionId ? -1 : 1 ;
+			return thisTxId < otherTxId ? -1 : 1 ;
 		}
 	}
 	
+	//XXX GETTERS
+	public ITransaction getTransaction() {
+		return tx;
+	}
 }

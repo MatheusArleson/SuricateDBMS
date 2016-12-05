@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import br.com.xavier.graphs.impl.algorithms.NodeInfo;
 import br.com.xavier.graphs.impl.edges.DefaultUnweightedEdge;
 import br.com.xavier.graphs.impl.simple.directed.DefaultSDUGraph;
 import br.com.xavier.graphs.interfaces.Graph;
+import br.com.xavier.suricate.dbms.abstractions.util.GraphCycleDetector;
 import br.com.xavier.suricate.dbms.enums.LockType;
 import br.com.xavier.suricate.dbms.enums.ObjectIdType;
 import br.com.xavier.suricate.dbms.enums.OperationTypes;
@@ -19,6 +21,7 @@ import br.com.xavier.suricate.dbms.enums.TransactionOperationStatus;
 import br.com.xavier.suricate.dbms.impl.services.lock.Lock;
 import br.com.xavier.suricate.dbms.impl.services.lock.TransactionNode;
 import br.com.xavier.suricate.dbms.impl.transactions.ScheduleResult;
+import br.com.xavier.suricate.dbms.impl.transactions.operation.TransactionOperation;
 import br.com.xavier.suricate.dbms.interfaces.services.ILockManager;
 import br.com.xavier.suricate.dbms.interfaces.services.lock.ILock;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
@@ -36,21 +39,15 @@ public abstract class AbstractLockManager implements ILockManager {
 	private Map<String, List<ILock>> rowsLocksMap;
 	
 	private Map<ITransaction, List<ITransactionOperation>> waitMap;
+	
+	private GraphCycleDetector graphCycleDetector;
+	private List<NodeInfo> cycleNodesInfo;
 	private Graph<TransactionNode, DefaultUnweightedEdge<TransactionNode>> waitForGraph;
 	
 	//XXX CONSTRUCTOR
 	public AbstractLockManager() {
-		generateLockMaps();
-		generateWaitMap();
-		generateWaitForGraph();
-	}
-	
-	private void generateWaitMap() {
-		this.waitMap = new LinkedHashMap<>();
-	}
-
-	private void generateWaitForGraph() {
-		this.waitForGraph = new DefaultSDUGraph<>();
+		generateMaps();
+		generateGraphProperties();
 	}
 	
 	//XXX ABSTRACT METHODS
@@ -75,6 +72,8 @@ public abstract class AbstractLockManager implements ILockManager {
 		removeNodeFromGraph(txOp);
 		removeLocks(txOp.getTransaction());
 		
+		//XXX TODO FIXME free tx from wait and re-process them
+		
 		Collection<IScheduleResult> results = new LinkedList<>();
 		results.add(new ScheduleResult(txOp, TransactionOperationStatus.SCHEDULED));
 		return results;
@@ -97,20 +96,18 @@ public abstract class AbstractLockManager implements ILockManager {
 	}
 	
 	private Collection<IScheduleResult> handleRelatedLocks(ILock lock, List<ILock> relatedLocks) {
-		 ITransactionOperation lockTxOp = lock.getTransactionOperation();
+		ITransactionOperation lockTxOp = lock.getTransactionOperation();
 		ITransaction lockTx = lockTxOp.getTransaction();
 		
 		Collection<IScheduleResult> schedulesResults = new LinkedList<>();
+		Collection<ITransaction> abortedTransactions = new LinkedList<>();
 		
 		Iterator<ILock> locksIterator = relatedLocks.iterator();
 		while(locksIterator.hasNext()){
 			ILock relatedLock = locksIterator.next();
 			ITransaction relatedTx = relatedLock.getTransactionOperation().getTransaction();
 			
-			boolean isOperationTxAborted = schedulesResults.stream().anyMatch(s -> 
-				s.getTransactionOperation().getTransaction().getId().equals( lockTx.getId() )
-				&& s.getStatus().equals(TransactionOperationStatus.ABORT_TRANSACTION)
-			);
+			boolean isOperationTxAborted = abortedTransactions.stream().anyMatch(s -> s.getId().equals( lockTx.getId() ) );
 			if(isOperationTxAborted){
 				break;
 			}
@@ -123,10 +120,7 @@ public abstract class AbstractLockManager implements ILockManager {
 				break;
 			}
 			
-			boolean isRelatedLockTxAborted = schedulesResults.stream().anyMatch(s -> 
-				s.getTransactionOperation().getTransaction().getId().equals( relatedTx.getId() )
-				&& s.getStatus().equals(TransactionOperationStatus.ABORT_TRANSACTION)
-			);
+			boolean isRelatedLockTxAborted = abortedTransactions.stream().anyMatch(s -> s.getId().equals( relatedTx.getId() ) );
 			if(isRelatedLockTxAborted){
 				continue;
 			}
@@ -138,26 +132,27 @@ public abstract class AbstractLockManager implements ILockManager {
 				
 				//syncronize conflict result with cenario
 				for (IScheduleResult result : conflicResult) {
-					ITransactionOperation resultTxOp = result.getTransactionOperation();
-					ITransaction resultTx = resultTxOp.getTransaction();
-					
 					switch ( result.getStatus() ) {
 					case ABORT_TRANSACTION:
-						removeNodeFromGraph(resultTxOp);
-						removeLocks(resultTx);
-						removeFromWaitMap(resultTx);
+						processAbortResult(result, abortedTransactions);
 						break;
 						
 					case WAITING:
-						addEdge(lockTx, relatedTx);
-						addToWaitMap(relatedTx, lockTxOp);
+						processWaitResult(lockTxOp, relatedTx);
+						
+						boolean hasDeadLock = detectGraphCycle( lockTx );
+						if( hasDeadLock ){
+							IScheduleResult deadLockResult = solveDeadLock(cycleNodesInfo);
+							schedulesResults.add(deadLockResult);
+							processAbortResult(deadLockResult, abortedTransactions);
+						} 
+						 
 						break;
 
 					default:
 						throw new IllegalArgumentException("Unknow result type.");
 					}
 				}
-				
 			}
 		}
 		
@@ -292,17 +287,37 @@ public abstract class AbstractLockManager implements ILockManager {
 		removeFromLockMap(tx, rowsLocksMap);
 	}
 	
-	//XXX FREE METHODS
-	@Override
-	public void free(ITransactionOperation txOp) {
-		// TODO Auto-generated method stub
+	private void processAbortResult(IScheduleResult result, Collection<ITransaction> abortedTransactionBuffer){
+		ITransactionOperation resultTxOp = result.getTransactionOperation();
+		ITransaction resultTx = resultTxOp.getTransaction();
+		
+		abortedTransactionBuffer.add(resultTx);
+		removeNodeFromGraph(resultTxOp);
+		removeLocks(resultTx);
+	}
+	
+	private void processWaitResult(ITransactionOperation txOp, ITransaction otherTx){
+		ITransaction tx = txOp.getTransaction();
+		addEdge(tx, otherTx);
+		addToWaitMap(otherTx, txOp);
+	}
+
+	private IScheduleResult solveDeadLock(Collection<NodeInfo> cycleNodesInfo) {
+		Collection<TransactionNode> visitedTxNodes = fetchVisitedNodes(cycleNodesInfo);
+		ITransaction abortedTx = fetchMostRecentTransaction(visitedTxNodes);
+		
+		ITransactionOperation txOp = new TransactionOperation(abortedTx , OperationTypes.ABORT, null);
+		IScheduleResult result = new ScheduleResult(txOp, TransactionOperationStatus.ABORT_TRANSACTION);
+		
+		return result;
 	}
 	
 	//XXX LOCK MAPS METHODS
-	private void generateLockMaps() {
+	private void generateMaps() {
 		this.tablesLocksMap = new LinkedHashMap<>();
 		this.blocksLocksMap = new LinkedHashMap<>();
 		this.rowsLocksMap = new LinkedHashMap<>();
+		this.waitMap = new LinkedHashMap<>();
 	}
 	
 	private String deriveTablesLocksMapKey(IObjectId objectId) {
@@ -362,7 +377,9 @@ public abstract class AbstractLockManager implements ILockManager {
 		waitMap.put(tx, waitingTxOps);
 	}
 	
-	private void removeFromWaitMap(ITransaction tx){
+	private Collection<ITransactionOperation> removeFromWaitMap(ITransaction tx){
+		Collection<ITransactionOperation> freeTxOps = new LinkedList<>();
+		
 		Iterator<Map.Entry<ITransaction,List<ITransactionOperation>>> mapKeysIterator = waitMap.entrySet().iterator();
 		while (mapKeysIterator.hasNext()) {
 			List<ITransactionOperation> waitingTxOps = waitMap.get(mapKeysIterator.next());
@@ -371,6 +388,7 @@ public abstract class AbstractLockManager implements ILockManager {
 			while(iterator.hasNext()){
 				ITransactionOperation txOp = iterator.next();
 				if(txOp.getTransaction().getId().equals(tx.getId())){
+					freeTxOps.add(txOp);
 					iterator.remove();
 				}
 			}
@@ -379,9 +397,16 @@ public abstract class AbstractLockManager implements ILockManager {
 				mapKeysIterator.remove();
 			}
 		}
+		
+		return freeTxOps;
 	}
 	
 	//XXX GRAPH METHODS
+	private void generateGraphProperties() {
+		this.waitForGraph = new DefaultSDUGraph<>();
+		this.graphCycleDetector = new GraphCycleDetector();
+	}
+	
 	private void addNodeToGraph(ITransactionOperation txOp) {
 		TransactionNode node = new TransactionNode( txOp.getTransaction() );
 		if( !waitForGraph.containsNode(node) ){
@@ -402,6 +427,39 @@ public abstract class AbstractLockManager implements ILockManager {
 		DefaultUnweightedEdge<TransactionNode> edge = new DefaultUnweightedEdge<TransactionNode>(source, target);
 		waitForGraph.addEdge(edge);
 		//write snapshot here
+	}
+	
+	private boolean detectGraphCycle(ITransaction tx){
+		this.cycleNodesInfo = graphCycleDetector.doAlgorithm( waitForGraph, new TransactionNode(tx) );
+		return graphCycleDetector.hasCycle();
+	}
+	
+	private Collection<TransactionNode> fetchVisitedNodes(Collection<NodeInfo> nodesInfo){
+		Collection<TransactionNode> visitedNodes = new LinkedList<>();
+		for (NodeInfo nodeInfo : nodesInfo) {
+			if( nodeInfo.isVisited() ){
+				visitedNodes.add((TransactionNode) nodeInfo.getNode());
+			}
+		}
+		
+		return visitedNodes;
+	}
+	
+	private ITransaction fetchMostRecentTransaction(Collection<TransactionNode> visitedTxNodes){
+		ITransaction mostRecentTx = null;
+		for (TransactionNode node : visitedTxNodes) {
+			ITransaction visitedTx = node.getTransaction();
+			if(mostRecentTx == null){
+				mostRecentTx = visitedTx;
+			} else {
+				boolean isAfter = visitedTx.getTimeStamp().isAfter(mostRecentTx.getTimeStamp());
+				if( isAfter  ){
+					mostRecentTx = visitedTx;
+				}
+			}
+		}
+		
+		return mostRecentTx;
 	}
 	
 	//XXX GETTERS/SETTERS

@@ -9,9 +9,5 @@ import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactio
 public interface ILockManager extends Serializable {
 	
 	Collection<IScheduleResult> process(ITransactionOperation txOp);
-	void free(ITransactionOperation txOp);
-	
-	//IDeadLockResult checkDeadLock(ITransactionOperation txOp);
-	//Collection<ITransaction> solveDeadLock(IDeadLockResult deadLockResult);
 
 }
