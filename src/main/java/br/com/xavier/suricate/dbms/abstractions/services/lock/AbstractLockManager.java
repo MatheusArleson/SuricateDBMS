@@ -1,5 +1,8 @@
 package br.com.xavier.suricate.dbms.abstractions.services.lock;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -10,8 +13,14 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Queue;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+
+import br.com.xavier.graphs.abstractions.AbstractGraph;
 import br.com.xavier.graphs.impl.algorithms.NodeInfo;
 import br.com.xavier.graphs.impl.edges.DefaultUnweightedEdge;
+import br.com.xavier.graphs.impl.parser.CytoscapeUnweightedParser;
 import br.com.xavier.graphs.impl.simple.directed.DefaultSDUGraph;
 import br.com.xavier.graphs.interfaces.Graph;
 import br.com.xavier.suricate.dbms.abstractions.util.GraphCycleDetector;
@@ -34,7 +43,13 @@ public abstract class AbstractLockManager implements ILockManager {
 
 	private static final long serialVersionUID = -6920168270904481451L;
 	
+	private static final Logger LOGGER = Logger.getLogger(AbstractLockManager.class);
+	private static final String TEMPLATE_REPLACE_TOKEN = "#JS#";
+	
 	//XXX PROPERTIES
+	private final File workspaceFolder;
+	private final boolean generateSnapshots;
+	
 	private Map<String, List<ILock>> tablesLocksMap;
 	private Map<String, List<ILock>> blocksLocksMap;
 	private Map<String, List<ILock>> rowsLocksMap;
@@ -42,41 +57,49 @@ public abstract class AbstractLockManager implements ILockManager {
 	private Map<ITransaction, Queue<ITransactionOperation>> waitMap;
 	
 	private GraphCycleDetector graphCycleDetector;
+	private CytoscapeUnweightedParser<TransactionNode, DefaultUnweightedEdge<TransactionNode>> graphJavaScriptParser;
 	private List<NodeInfo> cycleNodesInfo;
 	private Graph<TransactionNode, DefaultUnweightedEdge<TransactionNode>> waitForGraph;
 	
 	//XXX CONSTRUCTOR
-	public AbstractLockManager() {
+	public AbstractLockManager(File workspaceFolder, boolean generateSnapshots) {
+		this.workspaceFolder = workspaceFolder;
+		this.generateSnapshots = generateSnapshots;
 		generateMaps();
 		generateGraphProperties();
 	}
 	
 	//XXX ABSTRACT METHODS
 	public abstract ILock generateLockInstance(ITransactionOperation txOp, LockType lockType);
-	
 	public abstract Collection<IScheduleResult> handleIncompatibleLocks(ILock lock, ILock otherLock);
-	//public abstract IDeadLockResult detectDeadLock(ITransactionOperation txOp); 	
-	//public abstract  Collection<ITransaction> resolveDeadLock(IDeadLockResult deadLockResult);
 
 	//XXX IS LOCKED METHODS
 	@Override
 	public Collection<IScheduleResult> process(ITransactionOperation txOp) {
+		LOGGER.debug("###> LCK_MGR > PROCESS > " + txOp.toString());
+		
 		OperationTypes operationType = txOp.getOperationType();
 		if( operationType.equals(OperationTypes.COMMIT) || operationType.equals(OperationTypes.ABORT) ){
+			LOGGER.debug("#> LCK_MGR > PROCESS FINAL OPERATION");
 			return processFinalOperation(txOp);
 		}
 		
+		LOGGER.debug("#> LCK_MGR > PROCESS OTHER OPERATION");
 		return processOtherOperation(txOp);
 	}
 	
 	private Collection<IScheduleResult> processFinalOperation(ITransactionOperation txOp) {
 		removeNodeFromGraph(txOp);
-		removeLocks(txOp.getTransaction());
 		
-		//XXX TODO FIXME free tx from wait and re-process them
+		ITransaction tx = txOp.getTransaction();
+		removeLocks(tx);
 		
 		Collection<IScheduleResult> results = new LinkedList<>();
 		results.add(new ScheduleResult(txOp, TransactionOperationStatus.SCHEDULED));
+		
+		Collection<IScheduleResult> reprocessResults = reprocessWaitingTransactions(tx);
+		results.addAll(reprocessResults);
+		
 		return results;
 	}
 
@@ -430,6 +453,7 @@ public abstract class AbstractLockManager implements ILockManager {
 	private void generateGraphProperties() {
 		this.waitForGraph = new DefaultSDUGraph<>();
 		this.graphCycleDetector = new GraphCycleDetector();
+		this.graphJavaScriptParser = new CytoscapeUnweightedParser<>();
 	}
 	
 	private void addNodeToGraph(ITransactionOperation txOp) {
@@ -437,13 +461,15 @@ public abstract class AbstractLockManager implements ILockManager {
 		if( !waitForGraph.containsNode(node) ){
 			waitForGraph.addNode(node);
 		}
-		//write snapshot here
+		
+		generateGraphSnapshot();
 	}
 	
 	private void removeNodeFromGraph(ITransactionOperation txOp) {
 		TransactionNode node = new TransactionNode( txOp.getTransaction() );
 		waitForGraph.removeNode(node);
-		//write snapshot here
+		
+		generateGraphSnapshot();
 	}
 	
 	private void addEdge(ITransaction sourceTx, ITransaction targetTx){
@@ -451,7 +477,8 @@ public abstract class AbstractLockManager implements ILockManager {
 		TransactionNode target = new TransactionNode(targetTx);
 		DefaultUnweightedEdge<TransactionNode> edge = new DefaultUnweightedEdge<TransactionNode>(source, target);
 		waitForGraph.addEdge(edge);
-		//write snapshot here
+		
+		generateGraphSnapshot();
 	}
 	
 	private boolean detectGraphCycle(ITransaction tx){
@@ -485,6 +512,30 @@ public abstract class AbstractLockManager implements ILockManager {
 		}
 		
 		return mostRecentTx;
+	}
+	
+	private void generateGraphSnapshot() {
+		if( !generateSnapshots ){
+			return;
+		}
+		
+		try {
+			AbstractGraph<TransactionNode, DefaultUnweightedEdge<TransactionNode>> graph = (AbstractGraph<TransactionNode, DefaultUnweightedEdge<TransactionNode>>) waitForGraph;
+			String javaScript = graphJavaScriptParser.parse(graph, "cy", "cy");
+			
+			ClassLoader classLoader = getClass().getClassLoader();
+			File templateFile = new File(classLoader.getResource("snapTemplate.html").getFile());
+			FileInputStream fis = new FileInputStream(templateFile );
+			
+			String templateFileStr = IOUtils.toString(fis, StandardCharsets.UTF_8);
+			String snapshot = templateFileStr.replaceAll(TEMPLATE_REPLACE_TOKEN, javaScript);
+			
+			File outputFile = File.createTempFile("suricateDBMS_lockManager_snap", ".html", workspaceFolder);
+			FileUtils.writeStringToFile(outputFile, snapshot, StandardCharsets.UTF_8);
+		} catch(Exception e) {
+			System.out.println("ERROR WHILE WRITING SNAPSHOT");
+			e.printStackTrace();
+		}
 	}
 	
 	//XXX GETTERS/SETTERS

@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.impl.services.lock;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -18,8 +19,8 @@ public final class WoundWaiDeadLockManager extends AbstractLockManager {
 	private static final long serialVersionUID = -8936681674258166214L;
 
 	//XXX CONSTRUCTOR
-	public WoundWaiDeadLockManager() {
-		super();
+	public WoundWaiDeadLockManager(File workspaceFolder, boolean generateSnapshots) {
+		super(workspaceFolder, generateSnapshots);
 	}
 	
 	//XXX OVERRIDE METHODS

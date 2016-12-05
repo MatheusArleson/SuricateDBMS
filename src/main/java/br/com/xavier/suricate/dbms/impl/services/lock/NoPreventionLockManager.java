@@ -1,5 +1,6 @@
 package br.com.xavier.suricate.dbms.impl.services.lock;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -16,8 +17,8 @@ public class NoPreventionLockManager extends AbstractLockManager {
 	private static final long serialVersionUID = 3993734155682972876L;
 	
 	//XXX CONSTRUCTOR
-	public NoPreventionLockManager() {
-		super();
+	public NoPreventionLockManager(File workspaceFolder, boolean generateSnapshots) {
+		super(workspaceFolder, generateSnapshots);
 	}
 	
 	//XXX OVERRIDE METHODS

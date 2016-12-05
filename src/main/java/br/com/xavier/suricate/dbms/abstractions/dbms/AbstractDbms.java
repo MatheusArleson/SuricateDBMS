@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
 
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.services.BufferManager;
@@ -42,6 +43,8 @@ public abstract class AbstractDbms
 
 	private static final long serialVersionUID = 664946624331325685L;
 	
+	private static final Logger LOGGER = Logger.getLogger(AbstractDbms.class);
+	
 	//XXX DEPENDENCIES
 
 	//XXX WORKSPACE PROPERTIES
@@ -68,8 +71,7 @@ public abstract class AbstractDbms
 		this.fileSystemManager = new FileSystemManager(workspaceFolder, fileNameFilter);
 		this.bufferManager = new BufferManager(fileSystemManager, bufferDataBlockSlots);
 		
-		this.lockManager = new WaitDieDeadLockManager();
-		
+		this.lockManager = new WaitDieDeadLockManager(workspaceFolder, true);
 		this.transactionManager = new TransactionManager(lockManager);
 	}
 	
@@ -103,6 +105,7 @@ public abstract class AbstractDbms
 	
 	@Override
 	public Collection<IScheduleResult> schedule(ITransactionOperation txOp) {
+		LOGGER.debug("#> DBMS > SCHEDULE > " + txOp.toString());
 		return transactionManager.schedule( txOp );
 	}
 	
