@@ -1,6 +1,7 @@
 package br.com.xavier.suricate.dbms.interfaces.transactions.context;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
 import br.com.xavier.suricate.dbms.interfaces.transactions.ITransaction;
@@ -14,6 +15,7 @@ public interface ITransactionContext extends Serializable {
 	boolean isTransactionBlocked(ITransaction transaction);
 	boolean isTransactionBlocked(Long transactionId);
 	
+	void process(Collection<IScheduleResult> scheduleResults);
 	void process(IScheduleResult scheduleResult);
 
 }

@@ -89,37 +89,55 @@ public abstract class AbstractLockManager implements ILockManager {
 	}
 	
 	private Collection<IScheduleResult> processFinalOperation(ITransactionOperation txOp) {
+		LOGGER.debug("##> LCK_MGR > REMOVE TX NODE FROM GRAPH");
 		removeNodeFromGraph(txOp);
 		
 		ITransaction tx = txOp.getTransaction();
+		
+		LOGGER.debug("##> LCK_MGR > PURGE TX RELATED LOCKS");
 		removeLocks(tx);
 		
+		LOGGER.debug("##> LCK_MGR > GENERATE SCHEDULED RESULT");
 		Collection<IScheduleResult> results = new LinkedList<>();
 		results.add(new ScheduleResult(txOp, TransactionOperationStatus.SCHEDULED));
 		
+		LOGGER.debug("##> LCK_MGR > RE-PROCESS WAITING TX");
 		Collection<IScheduleResult> reprocessResults = reprocessWaitingTransactions(tx);
 		results.addAll(reprocessResults);
 		
+		LOGGER.debug("##> LCK_MGR > RETURN RESULTS");
 		return results;
 	}
 
 	private Collection<IScheduleResult> processOtherOperation(ITransactionOperation txOp){
+		LOGGER.debug("##> LCK_MGR > ADD TX NODE TO GRAPH");
 		addNodeToGraph(txOp);
+		
+		LOGGER.debug("##> LCK_MGR > FETCH RELATED LOCKS");
 		List<ILock> relatedLocks = fetchRelatedLocks(txOp);
 		
 		if(relatedLocks != null && !relatedLocks.isEmpty()){
+			LOGGER.debug("##> LCK_MGR > RELATED LOCKS FOUND > CHECK COMPATIBILITY");
 			ILock lock = generateLockInstance(txOp, LockType.NORMAL);
 			return handleRelatedLocks(lock, relatedLocks);
 		} else {
+			LOGGER.debug("##> LCK_MGR > NO RELATED LOCKS FOUND");
+			
+			LOGGER.debug("##> LCK_MGR > ADD RELATED LOCKS");
 			addLocks( txOp );
 			
+			LOGGER.debug("##> LCK_MGR > GENERATE SCHEDULED RESULT");
 			Collection<IScheduleResult> results = new LinkedList<>();
 			results.add(new ScheduleResult(txOp, TransactionOperationStatus.SCHEDULED));
+			
+			LOGGER.debug("##> LCK_MGR > RETURN RESULTS");
 			return results;
 		}
 	}
 	
 	private Collection<IScheduleResult> handleRelatedLocks(ILock lock, List<ILock> relatedLocks) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > HANDLING RELATED LOCKS");
+		
 		ITransactionOperation lockTxOp = lock.getTransactionOperation();
 		ITransaction lockTx = lockTxOp.getTransaction();
 		
@@ -129,10 +147,13 @@ public abstract class AbstractLockManager implements ILockManager {
 		Iterator<ILock> locksIterator = relatedLocks.iterator();
 		while(locksIterator.hasNext()){
 			ILock relatedLock = locksIterator.next();
+			LOGGER.debug("###> LCK_MGR > REALTED LOCKS > CHECKING LOCK > " + relatedLock.toString());
+			
 			ITransaction relatedTx = relatedLock.getTransactionOperation().getTransaction();
 			
 			boolean isOperationTxAborted = abortedTransactions.stream().anyMatch(s -> s.getId().equals( lockTx.getId() ) );
 			if(isOperationTxAborted){
+				LOGGER.debug("###> LCK_MGR > RELATED LOCKS > TX FROM TX_OP WAS ABORTED.");
 				break;
 			}
 			
@@ -141,28 +162,38 @@ public abstract class AbstractLockManager implements ILockManager {
 				&& s.getStatus().equals(TransactionOperationStatus.WAITING)
 			);
 			if(isOperationTxWaiting){
+				LOGGER.debug("###> LCK_MGR > RELATED LOCKS > TX FROM TX_OP IS WAITING.");
 				break;
 			}
 			
 			boolean isRelatedLockTxAborted = abortedTransactions.stream().anyMatch(s -> s.getId().equals( relatedTx.getId() ) );
 			if(isRelatedLockTxAborted){
+				LOGGER.debug("###> LCK_MGR > RELATED LOCKS > RELATED TX WAS ABORTED > SKIPPING");
 				continue;
 			}
 			
 			boolean isCompatible = ILock.isCompatible(lock, relatedLock);
+			LOGGER.debug("###> LCK_MGR > RELATED LOCKS > COMPATIBLE > " + isCompatible);
+			
 			if( !isCompatible ){
+				LOGGER.debug("###> LCK_MGR > RELATED LOCKS > DELEGATING HANDLE OF IMCOMPATIBLE LOCKS");
 				Collection<IScheduleResult> conflicResult = handleIncompatibleLocks(lock, relatedLock);
 				schedulesResults.addAll(conflicResult);
 				
-				//syncronize conflict result with cenario
+				LOGGER.debug("###> LCK_MGR > RELATED LOCKS > SYNC RESULT");
 				for (IScheduleResult result : conflicResult) {
 					switch ( result.getStatus() ) {
 					case ABORT_TRANSACTION:
+						
+						LOGGER.debug("###> LCK_MGR > RELATED LOCKS > PROCESS ABORT RESULT");
 						processAbortResult(result, abortedTransactions);
 						break;
 						
 					case WAITING:
+						LOGGER.debug("###> LCK_MGR > RELATED LOCKS > PROCESS WAIT RESULT");
 						processWaitResult(lockTxOp, relatedTx);
+						
+						LOGGER.debug("###> LCK_MGR > RELATED LOCKS > CHECK DEAD LOCK");
 						handleDeadLock(lockTx, schedulesResults, abortedTransactions); 
 						break;
 
@@ -173,12 +204,14 @@ public abstract class AbstractLockManager implements ILockManager {
 			}
 		}
 		
+		LOGGER.debug("###> LCK_MGR > RELATED LOCKS > RE-PROCESS ABORTED TXS WAITING TX-OPS");
 		for (ITransaction abortedTx : abortedTransactions) {
 			Collection<IScheduleResult>reprocessResults = reprocessWaitingTransactions( abortedTx );
 			schedulesResults.addAll(reprocessResults);
 		}
 		
 		if(schedulesResults.isEmpty()){
+			LOGGER.debug("###> LCK_MGR > RELATED LOCKS > NO CONFLICT FOUND");
 			schedulesResults.add(new ScheduleResult(lockTxOp, TransactionOperationStatus.SCHEDULED));
 		}
 		
@@ -186,6 +219,8 @@ public abstract class AbstractLockManager implements ILockManager {
 	}
 
 	private List<ILock> fetchRelatedLocks(ITransactionOperation txOp) {
+		LOGGER.debug("###> LCK_MGR > RELATED LOCKS > FETCHING RELATED LOCKS");
+		
 		IObjectId objectId = txOp.getObjectId();
 		ObjectIdType type = objectId .getType();
 		
@@ -200,20 +235,22 @@ public abstract class AbstractLockManager implements ILockManager {
 			return fetchRowRelatedLocks(objectId);
 			
 		default:
-			handleUnknowObjectIdType();
+			handleUnknowObjectIdType(type);
 			return null;
 		}
 	}
 	
 	private List<ILock> fetchTableReatedLocks(IObjectId objectId) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > RELATED TABLE LOCKS");
+		
 		List<ILock> relatedLocks = new LinkedList<>();
-		
 		relatedLocks.addAll( fetchTableLocks(objectId) );
-		
 		return relatedLocks;
 	}
 
 	private List<ILock> fetchBlockRelatedLocks(IObjectId objectId) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > RELATED BLOCK LOCKS");
+		
 		List<ILock> relatedLocks = new LinkedList<>();
 		
 		relatedLocks.addAll( fetchTableLocks(objectId) );
@@ -223,6 +260,8 @@ public abstract class AbstractLockManager implements ILockManager {
 	}
 
 	private List<ILock> fetchRowRelatedLocks(IObjectId objectId) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > RELATED ROW LOCKS");
+		
 		List<ILock> relatedLocks = new LinkedList<>();
 		
 		relatedLocks.addAll( fetchTableLocks(objectId) );
@@ -247,8 +286,10 @@ public abstract class AbstractLockManager implements ILockManager {
 		return fetchFromLockMap(mapKey, rowsLocksMap);
 	}
 	
-	private void handleUnknowObjectIdType() {
-		throw new UnsupportedOperationException("Unknow objectId type");
+	private void handleUnknowObjectIdType(ObjectIdType type) {
+		String message = "Unknow objectId type : " + type.toString();
+		LOGGER.error(message);
+		throw new UnsupportedOperationException(message);
 	}
 	
 	private void addLocks(ITransactionOperation txOp){
@@ -275,18 +316,24 @@ public abstract class AbstractLockManager implements ILockManager {
 	
 	private void addTableLock(ITransactionOperation txOp, LockType lockType) {
 		ILock lock = new Lock(txOp, lockType);
+		LOGGER.debug("###> LCK_MGR > LOCKS > ADD TABLE LOCK > " + lock.toString());
+		
 		String mapKey = deriveTablesLocksMapKey(txOp.getObjectId());
 		putInLockMap(mapKey, lock, tablesLocksMap);
 	}
 
 	private void addBlockLock(ITransactionOperation txOp, LockType lockType) {
 		ILock lock = new Lock(txOp, lockType);
+		LOGGER.debug("###> LCK_MGR > LOCKS > ADD BLOCK LOCK > " + lock.toString());
+		
 		String mapKey = deriveBlocksLocksMapKey(txOp.getObjectId());
 		putInLockMap(mapKey, lock, blocksLocksMap);
 	}
 
 	private void addRowLock(ITransactionOperation txOp, LockType lockType) {
 		ILock lock = new Lock(txOp, lockType);
+		LOGGER.debug("###> LCK_MGR > LOCKS > ADD ROW LOCK > " + lock.toString());
+		
 		String mapKey = deriveRowsLocksMapKey(txOp.getObjectId());
 		putInLockMap(mapKey, lock, rowsLocksMap);
 	}
@@ -298,36 +345,56 @@ public abstract class AbstractLockManager implements ILockManager {
 	}
 	
 	private void removeTableLocks(ITransaction tx) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > RMV TABLE LOCKS");
 		removeFromLockMap(tx, blocksLocksMap);
 	}
 
 	private void removeBlockLocks(ITransaction tx) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > RMV BLOCK LOCKS");
 		removeFromLockMap(tx, blocksLocksMap);
 	}
 
 	private void removeRowLocks(ITransaction tx) {
+		LOGGER.debug("###> LCK_MGR > LOCKS > RMV ROW LOCKS");
 		removeFromLockMap(tx, rowsLocksMap);
 	}
 	
 	private void processAbortResult(IScheduleResult result, Collection<ITransaction> abortedTransactionBuffer){
+		LOGGER.debug("####> LCK_MGR > ABORT RESULT > PROCESSING ABORT RESULT > " + result.toString());
+		
 		ITransactionOperation resultTxOp = result.getTransactionOperation();
 		ITransaction resultTx = resultTxOp.getTransaction();
 		
 		abortedTransactionBuffer.add(resultTx);
+		
+		LOGGER.debug("####> LCK_MGR > ABORT RESULT > RMV TX NODE FROM GRAPH" + resultTxOp.toString());
 		removeNodeFromGraph(resultTxOp);
+		
+		LOGGER.debug("####> LCK_MGR > ABORT RESULT > RMV LOCKS > " + resultTx.toString());
 		removeLocks(resultTx);
 	}
 	
 	private void processWaitResult(ITransactionOperation txOp, ITransaction otherTx){
 		ITransaction tx = txOp.getTransaction();
+		
+		LOGGER.debug("####> LCK_MGR > WAIT RESULT > ADD TX EDGE TO GRAPH > SOURCE : " + tx.getId() + " > TARGET : " + otherTx.getId());
 		addEdge(tx, otherTx);
+		
+		LOGGER.debug("####> LCK_MGR > WAIT RESULT > ADD TO WAIT MAP");
 		addToWaitMap(otherTx, txOp);
 	}
 	
 	private void handleDeadLock(ITransaction lockTx, Collection<IScheduleResult> schedulesResults, Collection<ITransaction> abortedTransactions) {
+		LOGGER.debug("####> LCK_MGR > DEAD LOCKS > DETECTING DEAD LOCK");
+		
 		boolean hasDeadLock = detectGraphCycle( lockTx );
+		LOGGER.debug("####> LCK_MGR > DEAD LOCKS > HAS DEAD LOCK > " + hasDeadLock);
+		
 		if( hasDeadLock ){
+			LOGGER.debug("####> LCK_MGR > DEAD LOCKS > SOLVING DEAD LOCK");
 			IScheduleResult deadLockResult = solveDeadLock(cycleNodesInfo);
+			
+			LOGGER.debug("####> LCK_MGR > DEAD LOCKS > PROCESS DEAD LOCK RESULT");
 			schedulesResults.add(deadLockResult);
 			processAbortResult(deadLockResult, abortedTransactions);
 		}
@@ -344,15 +411,20 @@ public abstract class AbstractLockManager implements ILockManager {
 	}
 	
 	private Collection<IScheduleResult> reprocessWaitingTransactions(ITransaction abortedTx){
+		LOGGER.debug("###> LCK_MGR > RE-PROCESS > ABORTED TX > " + abortedTx.toString());
+		
 		LinkedList<IScheduleResult> schedulesResults = new LinkedList<>();
 		
 		Queue<ITransactionOperation> waitingOperations = getWaitingOperations( abortedTx );
 		for (ITransactionOperation waitingTxOp : waitingOperations) {
+			LOGGER.debug("###> LCK_MGR > RE-PROCESS > WAITING TX OP > " + waitingTxOp);
 			Collection<IScheduleResult> results = process(waitingTxOp);
 			schedulesResults.addAll(results);
 		}
 		
+		LOGGER.debug("###> LCK_MGR > WAIT > PURGE TX");
 		purgeFromWaitMap(abortedTx);
+		
 		return schedulesResults;
 	}
 	

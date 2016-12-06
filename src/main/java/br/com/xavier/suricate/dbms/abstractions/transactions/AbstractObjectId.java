@@ -63,9 +63,9 @@ public abstract class AbstractObjectId
 	
 	@Override
 	public String toString() {
-		return "AbstractRowId [" 
+		return "AbstractObjectId [" 
 			+ "tableId=" + tableId 
-			+ ", blockId=" + blockId 
+			+ ", blockId=" + blockId.getValue()
 			+ ", byteOffset=" + byteOffset 
 		+ "]";
 	}

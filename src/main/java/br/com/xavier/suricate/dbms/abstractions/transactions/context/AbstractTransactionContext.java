@@ -1,9 +1,12 @@
 package br.com.xavier.suricate.dbms.abstractions.transactions.context;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.log4j.Logger;
 
 import br.com.xavier.suricate.dbms.enums.TransactionOperationStatus;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
@@ -15,6 +18,8 @@ public abstract class AbstractTransactionContext
 				implements ITransactionContext {
 
 	private static final long serialVersionUID = 199034666949334055L;
+	
+	private static final Logger LOGGER = Logger.getLogger(AbstractTransactionContext.class);
 	
 	//XXX PROPERTIES
 	private Map<Long, ITransaction> transactionsMap;
@@ -39,6 +44,7 @@ public abstract class AbstractTransactionContext
 	
 	@Override
 	public ITransactionOperation next(){
+		LOGGER.debug("#> TX_CTX > FETCH NEXT OPERATION ");
 		ITransaction tx = fetchRandomTransaction();
 		ITransactionOperation txOp = tx.getNextOperation();
 		
@@ -65,20 +71,49 @@ public abstract class AbstractTransactionContext
 	}
 	
 	@Override
+	public void process(Collection<IScheduleResult> scheduleResults) {
+		if(scheduleResults == null || scheduleResults.isEmpty()){
+			return;
+		}
+		
+		for (IScheduleResult result : scheduleResults) {
+			process(result);
+		}
+	}
+	
+	@Override
 	public void process(IScheduleResult result) {
 		if( result == null ){
 			throw new IllegalArgumentException("Null schedule result");
 		}
 		
+		LOGGER.debug("#> TX_CTX > PROCESS > " + result.toString());
+		
 		TransactionOperationStatus status = result.getStatus();
+		ITransactionOperation resultTxOp = result.getTransactionOperation();
+		ITransaction resultTx = resultTxOp.getTransaction();
+		
 		switch (status) {
 		case SCHEDULED:
+			LOGGER.debug("#> TX_CTX > SCHEDULED > " + resultTxOp.toString());
+			
+			if(isTransactionBlocked(resultTx)){
+				LOGGER.debug("#> TX_CTX > UNBLOCK TX > " + resultTxOp.toString());
+				unblockTransaction(resultTx);
+			}
+			
 			break;
 			
 		case WAITING:
+			LOGGER.debug("#> TX_CTX > WAITING > " + resultTxOp.toString());
+			LOGGER.debug("##> TX_CTX > PUT ON BLOCKED > " + resultTxOp.toString());
+			
+			blockTransaction(resultTx);
 			break;
 			
 		case ABORT_TRANSACTION:
+			LOGGER.debug("#> TX_CTX > ABORTED > " + resultTxOp.toString());
+			ummapTransaction(resultTx);
 			break;
 
 		default:
@@ -87,22 +122,7 @@ public abstract class AbstractTransactionContext
 		
 	}
 	
-	//XXX PRIVATE METHODS
-	private void blockTransaction(ITransaction transaction) {
-		if( isTransactionBlocked(transaction) ){
-			return;
-		}
-		
-		addTransactionToBlocked(transaction);
-	}
-	
-	private void unblockTransaction(ITransaction transaction) {
-		if( !isTransactionBlocked(transaction) ){
-			return;
-		}
-		
-		removeTransactionFromBlocked(transaction);
-	}
+	//XXX TRANSACTIONS METHODS
 	
 	private void setTransactions(List<ITransaction> transactions){
 		if(transactions == null || transactions.isEmpty()){
@@ -138,15 +158,6 @@ public abstract class AbstractTransactionContext
 		ummapTransaction(emptyTransation);
 	}
 	
-	private void addTransactionToBlocked(ITransaction transaction) {
-		Long id = transaction.getId();
-		blockedTransactionsMap.put(id, transaction);
-	}
-	
-	private void removeTransactionFromBlocked(ITransaction transaction) {
-		blockedTransactionsMap.remove(transaction.getId());
-	}
-	
 	private ITransaction fetchRandomTransaction() {
 		ITransaction tx = null;
 		
@@ -158,6 +169,33 @@ public abstract class AbstractTransactionContext
 		}
 		
 		return tx;
+	}
+	
+	//XXX BLOCK TRANSACTIONS METHODS
+	
+	private void blockTransaction(ITransaction transaction) {
+		if( isTransactionBlocked(transaction) ){
+			return;
+		}
+		
+		addTransactionToBlocked(transaction);
+	}
+	
+	private void unblockTransaction(ITransaction transaction) {
+		if( !isTransactionBlocked(transaction) ){
+			return;
+		}
+		
+		removeTransactionFromBlocked(transaction);
+	}
+	
+	private void addTransactionToBlocked(ITransaction transaction) {
+		Long id = transaction.getId();
+		blockedTransactionsMap.put(id, transaction);
+	}
+	
+	private void removeTransactionFromBlocked(ITransaction transaction) {
+		blockedTransactionsMap.remove(transaction.getId());
 	}
 	
 }
