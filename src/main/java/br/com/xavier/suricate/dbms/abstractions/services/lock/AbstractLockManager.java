@@ -59,6 +59,8 @@ public abstract class AbstractLockManager implements ILockManager {
 	private GraphCycleDetector graphCycleDetector;
 	private CytoscapeUnweightedParser<TransactionNode, DefaultUnweightedEdge<TransactionNode>> graphJavaScriptParser;
 	private List<NodeInfo> cycleNodesInfo;
+	
+	private Long snapShotCounter;
 	private Graph<TransactionNode, DefaultUnweightedEdge<TransactionNode>> waitForGraph;
 	
 	//XXX CONSTRUCTOR
@@ -526,6 +528,7 @@ public abstract class AbstractLockManager implements ILockManager {
 		this.waitForGraph = new DefaultSDUGraph<>();
 		this.graphCycleDetector = new GraphCycleDetector();
 		this.graphJavaScriptParser = new CytoscapeUnweightedParser<>();
+		this.snapShotCounter = new Long(0L);
 	}
 	
 	private void addNodeToGraph(ITransactionOperation txOp) {
@@ -602,8 +605,13 @@ public abstract class AbstractLockManager implements ILockManager {
 			String templateFileStr = IOUtils.toString(fis, StandardCharsets.UTF_8);
 			String snapshot = templateFileStr.replaceAll(TEMPLATE_REPLACE_TOKEN, javaScript);
 			
-			File outputFile = File.createTempFile("suricateDBMS_lockManager_snap", ".html", workspaceFolder);
+			File outputFile = File.createTempFile("suricateDBMS_lockManager_snap_" + snapShotCounter + "_", ".html", workspaceFolder);
 			FileUtils.writeStringToFile(outputFile, snapshot, StandardCharsets.UTF_8);
+			
+			snapShotCounter++;
+			
+			LOGGER.debug("####> LCK_MNG > GRAPH SNAPSHOT > FILE GENERATED > " + outputFile.getName());
+			
 		} catch(Exception e) {
 			System.out.println("ERROR WHILE WRITING SNAPSHOT");
 			e.printStackTrace();

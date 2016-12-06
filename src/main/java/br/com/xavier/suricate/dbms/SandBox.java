@@ -47,7 +47,14 @@ public class SandBox {
 		
 		int numberOfTransactions = 5;
 		int maxNumberOfOperations = 5;
-		Collection<IObjectId> objectIds = generateObjectIds(numberOfTransactions, new Random(System.nanoTime()));
+		
+		int numberOfObjectsIds = 10;
+		int maxTableId = 20; 
+		int maxBlockId = 20; 
+		int maxRowOffset = 20;
+		
+		Random random = new Random(System.nanoTime());
+		Collection<IObjectId> objectIds = generateObjectIds(numberOfObjectsIds, random, maxTableId, maxBlockId, maxRowOffset);
 
 		TransactionContextGenerator tg = new TransactionContextGenerator();
 		
@@ -62,23 +69,31 @@ public class SandBox {
 		}
 		
 		LOGGER.debug("#> FINISHED PROCESS CTX ");
-		
 	}
 
-	//TODO FIXME generate object ids for table
-	//TODO FIXME generate object ids for row
-	private static Collection<IObjectId> generateObjectIds(int numberOfTransactions, Random random) {
+	private static Collection<IObjectId> generateObjectIds(int numberOfObjectsIds, Random random, Integer maxTableId, Integer maxBlockId, Integer maxRowOffset) {
 		List<IObjectId> objectIds = new ArrayList<>();
 		
 		int objectIdCount = 0;
-		while(objectIdCount < numberOfTransactions){
-			Integer randomNumber = random.nextInt(20);
-			Byte tableId = randomNumber.byteValue();
+		while(objectIdCount < numberOfObjectsIds){
+			Byte tableId = Byte.MIN_VALUE;
+			while(tableId < 1){
+				tableId = ((Integer) random.nextInt(maxTableId)).byteValue();
+			}
 			
-			IThreeByteValue blockId = new BigEndianThreeBytesValue(1);
-			Long byteOffset = -1L;
+			Integer blockId = Integer.MIN_VALUE;
+			while(blockId < 1){
+				blockId = random.nextInt(maxBlockId);
+			}
+			IThreeByteValue blockIdTbv = new BigEndianThreeBytesValue(blockId);
 			
-			IObjectId objId = new ObjectId(tableId, blockId, byteOffset );
+			Long byteOffset = Long.MIN_VALUE;
+			while(byteOffset < -1){
+				byteOffset = random.nextLong();
+			}
+			
+			IObjectId objId = new ObjectId(tableId, blockIdTbv, byteOffset);
+			IObjectId.validate(objId);
 			objectIds.add(objId);
 			
 			objectIdCount++;
