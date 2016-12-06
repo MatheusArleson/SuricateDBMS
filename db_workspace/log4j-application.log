@@ -1,1 +1,0 @@
-2016-12-05 19:50:34 DEBUG AbstractDbms:108 - #> DBMS > SCHEDULE > AbstractTransactionOperation [operationType=WRITE, transaction=AbstractTransaction [id=1], objectId=AbstractRowId [tableId=4, blockId=AbstractThreeByteValue [byteEndianess=BIG_ENDIAN, value=[0, 0, 1]], byteOffset=-1]]
