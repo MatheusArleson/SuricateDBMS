@@ -10,10 +10,14 @@ import org.apache.log4j.Logger;
 
 import br.com.xavier.suricate.dbms.impl.dbms.SuricateDbms;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
+import br.com.xavier.suricate.dbms.impl.services.lock.NoPreventionLockManager;
+import br.com.xavier.suricate.dbms.impl.services.lock.WaitDieDeadLockManager;
+import br.com.xavier.suricate.dbms.impl.services.lock.WoundWaiDeadLockManager;
 import br.com.xavier.suricate.dbms.impl.transactions.ObjectId;
 import br.com.xavier.suricate.dbms.impl.transactions.context.TransactionContextGenerator;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.services.ILockManager;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IObjectId;
 import br.com.xavier.suricate.dbms.interfaces.transactions.IScheduleResult;
 import br.com.xavier.suricate.dbms.interfaces.transactions.context.ITransactionContext;
@@ -43,10 +47,14 @@ public class SandBox {
 	
 	public static void main(String[] args) throws Exception {
 		
-		IDbms database = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
+		ILockManager lockManager = new WaitDieDeadLockManager(workspaceFolder, true);
+		//ILockManager lockManager = new WoundWaiDeadLockManager(workspaceFolder, true);
+		//ILockManager lockManager = new NoPreventionLockManager(workspaceFolder, true);
 		
-		int numberOfTransactions = 5;
-		int maxNumberOfOperations = 5;
+		IDbms database = new SuricateDbms(workspaceFolder, bufferDataBlockSlots, lockManager);
+		
+		int numberOfTransactions = 10;
+		int maxNumberOfOperations = 10;
 		
 		int numberOfObjectsIds = 10;
 		int maxTableId = 20; 
@@ -67,6 +75,14 @@ public class SandBox {
 			Collection<IScheduleResult> scheduleResults = database.schedule(txOp);
 			ctx.process(scheduleResults);
 		}
+		
+		String graphTraffic = lockManager.getGraphTrafficAsString();
+		LOGGER.debug("#> GRAPH TRAFFIC > ");
+		LOGGER.debug("\n" + graphTraffic + "\n");
+		
+		String finalSchedule = ctx.getFinalScheduleAsString();
+		LOGGER.debug("#> FINAL SCHEDULE > ");
+		LOGGER.debug("\n" + finalSchedule + "\n");
 		
 		LOGGER.debug("#> FINISHED PROCESS CTX ");
 	}

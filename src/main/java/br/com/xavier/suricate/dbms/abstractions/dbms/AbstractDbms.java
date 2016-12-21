@@ -18,7 +18,6 @@ import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.services.BufferManager;
 import br.com.xavier.suricate.dbms.impl.services.FileSystemManager;
 import br.com.xavier.suricate.dbms.impl.services.TransactionManager;
-import br.com.xavier.suricate.dbms.impl.services.lock.WaitDieDeadLockManager;
 import br.com.xavier.suricate.dbms.impl.table.access.RowId;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
@@ -59,19 +58,18 @@ public abstract class AbstractDbms
 	private ITransactionManager transactionManager;
 
 	//XXX CONSTRUCTOR
-	public AbstractDbms(File workspaceFolder, IFileNameFilter fileNameFilter, int bufferDataBlockSlots) throws IOException {
+	public AbstractDbms(File workspaceFolder, IFileNameFilter fileNameFilter, int bufferDataBlockSlots, ILockManager lockManager) throws IOException {
 		this.workspaceFolder = Objects.requireNonNull(workspaceFolder, "Workspace folder must not be null.");
 		this.fileNameFilter = Objects.requireNonNull(fileNameFilter, "File name filter must not be null.");
 		this.bufferDataBlockSlots = bufferDataBlockSlots;
 		
+		this.lockManager = Objects.requireNonNull( lockManager );
 		initialize();
 	}
 	
 	private void initialize() throws IOException {
 		this.fileSystemManager = new FileSystemManager(workspaceFolder, fileNameFilter);
 		this.bufferManager = new BufferManager(fileSystemManager, bufferDataBlockSlots);
-		
-		this.lockManager = new WaitDieDeadLockManager(workspaceFolder, true);
 		this.transactionManager = new TransactionManager(lockManager);
 	}
 	

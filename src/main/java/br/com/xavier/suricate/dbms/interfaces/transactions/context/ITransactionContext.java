@@ -17,5 +17,7 @@ public interface ITransactionContext extends Serializable {
 	
 	void process(Collection<IScheduleResult> scheduleResults);
 	void process(IScheduleResult scheduleResult);
+	
+	String getFinalScheduleAsString();
 
 }

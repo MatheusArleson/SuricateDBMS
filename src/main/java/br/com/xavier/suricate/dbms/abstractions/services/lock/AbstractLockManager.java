@@ -62,6 +62,7 @@ public abstract class AbstractLockManager implements ILockManager {
 	
 	private Long snapShotCounter;
 	private Graph<TransactionNode, DefaultUnweightedEdge<TransactionNode>> waitForGraph;
+	private Queue<String> graphTraffic;
 	
 	//XXX CONSTRUCTOR
 	public AbstractLockManager(File workspaceFolder, boolean generateSnapshots) {
@@ -529,12 +530,14 @@ public abstract class AbstractLockManager implements ILockManager {
 		this.graphCycleDetector = new GraphCycleDetector();
 		this.graphJavaScriptParser = new CytoscapeUnweightedParser<>();
 		this.snapShotCounter = new Long(0L);
+		this.graphTraffic = new LinkedList<>();
 	}
 	
 	private void addNodeToGraph(ITransactionOperation txOp) {
 		TransactionNode node = new TransactionNode( txOp.getTransaction() );
 		if( !waitForGraph.containsNode(node) ){
 			waitForGraph.addNode(node);
+			graphTraffic.add("ADD NODE TX " + node.getTransaction().getId());
 		}
 		
 		generateGraphSnapshot();
@@ -543,7 +546,7 @@ public abstract class AbstractLockManager implements ILockManager {
 	private void removeNodeFromGraph(ITransactionOperation txOp) {
 		TransactionNode node = new TransactionNode( txOp.getTransaction() );
 		waitForGraph.removeNode(node);
-		
+		graphTraffic.add("REMOVE NODE TX " + node.getTransaction().getId());
 		generateGraphSnapshot();
 	}
 	
@@ -552,8 +555,19 @@ public abstract class AbstractLockManager implements ILockManager {
 		TransactionNode target = new TransactionNode(targetTx);
 		DefaultUnweightedEdge<TransactionNode> edge = new DefaultUnweightedEdge<TransactionNode>(source, target);
 		waitForGraph.addEdge(edge);
-		
+		graphTraffic.add("ADD EDGE SOURCE TX > " + source.getTransaction().getId() + " | TARGET TX > " + target.getTransaction().getId());
 		generateGraphSnapshot();
+	}
+	
+	@Override
+	public String getGraphTrafficAsString() {
+		StringBuffer sb = new StringBuffer();
+		for (String movement : graphTraffic) {
+			sb.append(movement);
+			sb.append("\n");
+		}
+		
+		return sb.toString();
 	}
 	
 	private boolean detectGraphCycle(ITransaction tx){

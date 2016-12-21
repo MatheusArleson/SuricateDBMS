@@ -47,11 +47,10 @@ public abstract class AbstractScheduleResult implements IScheduleResult {
 			return false;
 		return true;
 	}
-	
 
 	@Override
 	public String toString() {
-		return "AbstractScheduleResult [transactionOperation=" + transactionOperation + ", status=" + status + "]";
+		return "[transactionOperation=" + transactionOperation + ", status=" + status + "]";
 	}
 
 	//XXX OVERRIDE METHODS

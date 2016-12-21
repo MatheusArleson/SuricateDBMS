@@ -9,5 +9,6 @@ import br.com.xavier.suricate.dbms.interfaces.transactions.operation.ITransactio
 public interface ILockManager extends Serializable {
 	
 	Collection<IScheduleResult> process(ITransactionOperation txOp);
+	String getGraphTrafficAsString();
 
 }

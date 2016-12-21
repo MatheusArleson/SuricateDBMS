@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import br.com.xavier.suricate.dbms.abstractions.dbms.AbstractDbms;
 import br.com.xavier.suricate.dbms.impl.services.FileNameFilter;
+import br.com.xavier.suricate.dbms.interfaces.services.ILockManager;
 
 public class SuricateDbms 
 		extends AbstractDbms {
@@ -13,8 +14,8 @@ public class SuricateDbms
 
 	private static final String SURICATE_FILE_SUFFIX = ".suricata";
 	
-	public SuricateDbms(File workspaceFolder, int bufferDataBlockSlots) throws IOException {
-		super(workspaceFolder, new FileNameFilter(SURICATE_FILE_SUFFIX), bufferDataBlockSlots);
+	public SuricateDbms(File workspaceFolder, int bufferDataBlockSlots, ILockManager lockManager) throws IOException {
+		super(workspaceFolder, new FileNameFilter(SURICATE_FILE_SUFFIX), bufferDataBlockSlots, lockManager);
 	}
 
 }

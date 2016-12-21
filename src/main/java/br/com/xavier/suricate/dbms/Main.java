@@ -18,8 +18,10 @@ import org.apache.commons.io.FilenameUtils;
 import br.com.xavier.suricate.dbms.impl.dbms.SuricateDbms;
 import br.com.xavier.suricate.dbms.impl.low.BigEndianThreeBytesValue;
 import br.com.xavier.suricate.dbms.impl.services.TextSeparators;
+import br.com.xavier.suricate.dbms.impl.services.lock.WaitDieDeadLockManager;
 import br.com.xavier.suricate.dbms.interfaces.dbms.IDbms;
 import br.com.xavier.suricate.dbms.interfaces.low.IThreeByteValue;
+import br.com.xavier.suricate.dbms.interfaces.services.ILockManager;
 import br.com.xavier.suricate.dbms.interfaces.services.ITextSeparators;
 import br.com.xavier.suricate.dbms.interfaces.table.ITable;
 import br.com.xavier.suricate.dbms.interfaces.table.access.IRowId;
@@ -54,7 +56,8 @@ public final class Main {
 		sysoAndLog("#> SURICATE DB > PARAMETERS INITIALIZED > ");
 		
 		sysoAndLog("#> SURICATE DB > INITIALIZING WORKSPACE > ");
-		IDbms dbms = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
+		ILockManager lockManager = new WaitDieDeadLockManager(workspaceFolder, false);
+		IDbms dbms = new SuricateDbms(workspaceFolder, bufferDataBlockSlots, lockManager);
 		sysoAndLog("#> SURICATE DB > WORKSPACE INITIALIZED > ");
 		
 		sysoAndLog("#> SURICATE DB > IMPORTING TABLES > ");
@@ -78,7 +81,7 @@ public final class Main {
 		sysoAndLog("#> SURICATE DB > INSTANCE DOWN > ");
 		
 		sysoAndLog("#> SURICATE DB > INITIALIZING NEW INSTANCE > ");
-		dbms = new SuricateDbms(workspaceFolder, bufferDataBlockSlots);
+		dbms = new SuricateDbms(workspaceFolder, bufferDataBlockSlots, lockManager);
 		sysoAndLog("#> SURICATE DB > NEW INSTANCE INITIALIZED > ");
 		
 		sysoAndLog("#> SURICATE DB > OUTPUT TABLES DATA > ");

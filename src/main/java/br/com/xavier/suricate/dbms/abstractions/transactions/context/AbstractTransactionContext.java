@@ -2,8 +2,10 @@ package br.com.xavier.suricate.dbms.abstractions.transactions.context;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.log4j.Logger;
@@ -25,11 +27,14 @@ public abstract class AbstractTransactionContext
 	private Map<Long, ITransaction> transactionsMap;
 	private Map<Long, ITransaction> blockedTransactionsMap;
 	
+	private Queue<IScheduleResult> finalSchedule;
+	
 	private Long minTxId;
 	private Long maxTxId;
 	
 	//XXX CONSTRUCTOR
 	public AbstractTransactionContext(List<ITransaction> transactions) {
+		finalSchedule = new LinkedList<>();
 		blockedTransactionsMap = new LinkedHashMap<>();
 		minTxId = Long.MAX_VALUE;
 		maxTxId = Long.MIN_VALUE;
@@ -88,6 +93,7 @@ public abstract class AbstractTransactionContext
 		}
 		
 		LOGGER.debug("#> TX_CTX > PROCESS > " + result.toString());
+		addToFinalSchedule(result);
 		
 		TransactionOperationStatus status = result.getStatus();
 		ITransactionOperation resultTxOp = result.getTransactionOperation();
@@ -120,6 +126,18 @@ public abstract class AbstractTransactionContext
 			break;
 		}
 		
+	}
+
+	@Override
+	public String getFinalScheduleAsString() {
+		StringBuffer sb = new StringBuffer();
+		
+		for (IScheduleResult schedule : finalSchedule) {
+			sb.append(schedule.toString());
+			sb.append("\n");
+		}
+		
+		return sb.toString();
 	}
 	
 	//XXX TRANSACTIONS METHODS
@@ -196,6 +214,11 @@ public abstract class AbstractTransactionContext
 	
 	private void removeTransactionFromBlocked(ITransaction transaction) {
 		blockedTransactionsMap.remove(transaction.getId());
+	}
+	
+	//XXX FINAL SCHEDULE METHODS
+	private void addToFinalSchedule(IScheduleResult result) {
+		finalSchedule.add(result);
 	}
 	
 }
